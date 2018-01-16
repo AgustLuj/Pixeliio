@@ -1,5 +1,6 @@
 var app = new PIXI.Application({width:1000,height:700});
 document.body.appendChild(app.view);
+document.body.addEventListener('keydown',e => onkeydown(e));
 
 app.ticker.add(delta => gameLoop(delta));
 
@@ -48,11 +49,53 @@ app.stage.addChild(back);
 
 /*****************************************************************/
 
-var InputBox = function(x,y,w){
+var InputBox = function(x,y,w,size,color){
 
 	this.x = x;
 	this.y = y;
+
 	this.w = w;
+	this.h;
+
+	this.click = false;
+	this.selected = false;
+
+	this.color = color;
+	this.str = "";
+
+	this.text = new Text(this.str,this.x,this.y,size);
+
+	this.h = this.text.text.height + 20;
+
+	this.text.set(this.x + (this.w - this.text.text.width) / 2,this.y + (this.h - this.text.text.height) / 2);
+
+	this.graphics = new PIXI.Graphics();
+	this.graphics.lineStyle(2,getColor(255,255,255),1);
+	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,10);
+	this.graphics.tint = turquoise;
+
+	app.stage.addChild(this.graphics);
+	this.text.add();
+
+	this.doClick = function(bool){
+
+		this.click = bool;
+
+		if(this.click){
+			this.graphics.tint = greensea;
+			this.selected = !this.selected;
+		}else {
+			this.graphics.tint = turquoise;
+		}
+	}
+
+	this.setText = function(txt){
+
+		this.str = txt;
+		this.text.setText(this.str);
+
+		this.text.set(this.x + (this.w - this.text.text.width) / 2,this.y + (this.h - this.text.text.height) / 2);
+	}
 }
 
 var Text = function(str,x,y,size){
@@ -108,7 +151,7 @@ var Text = function(str,x,y,size){
 	}
 }
 
-var Button = function(x,y,str,color,w){
+var Button = function(x,y,w,str,size,color){
 
 	this.x = x;
 	this.y = y;
@@ -121,7 +164,7 @@ var Button = function(x,y,str,color,w){
 	this.color = color;
 	this.str = str;
 
-	this.text = new Text(this.str,this.x,this.y,20);
+	this.text = new Text(this.str,this.x,this.y,size);
 
 	if(this.text.text.width + 50 > this.w){
 		this.w = this.text.text.width + 50;
@@ -139,6 +182,17 @@ var Button = function(x,y,str,color,w){
 
 	app.stage.addChild(this.graphics);
 	this.text.add();
+
+	this.doClick = function(bool){
+
+		this.click = bool;
+
+		if(this.click){
+			this.graphics.tint = greensea;
+		}else {
+			this.graphics.tint = turquoise;
+		}
+	}
 }
 
 var Image = function(size,offx,offy,scale){
@@ -324,6 +378,7 @@ var clock;
 var wait;
 
 var button_join;
+var inputbox;
 
 setScreen(0);
 
@@ -341,8 +396,11 @@ function setScreen(S){
 
 	if(S == 0){
 
-		button_join = new Button(400,200,"Join",turquoise,200);
+		button_join = new Button(400,200,200,"Ingresar",22,turquoise);
+		inputbox = new InputBox(400,140,200,22,turquoise);
+
 		buttons.push(button_join);
+		buttons.push(inputbox);
 
 	}else if(S == 1){
 
@@ -352,7 +410,7 @@ function setScreen(S){
 		image = new Image(32,1000 - 32 * SCALE - 20,700 - 32 * SCALE - 20,SCALE);
 
 		for(var x = 0;x < 3;x++){
-			for(var y = 0;y < 7;y++){
+			for(var y = 0;y < 6;y++){
 				images.push(new Image(32,8 + x * 100,8 + y * 100,3));
 			}
 		}
@@ -360,12 +418,12 @@ function setScreen(S){
 		color_picker = new ColorPicker();
 		color_picker.show(false);
 
-		clock = new Text("00:00",410,20,50);
+		clock = new Text("00:00",400,20,50);
 		clock.add();
 
 	}else if(S == 2){
 
-		wait = new Text("Esperando jugadores..",300,200,50);
+		wait = new Text("Buscando Partida..",300,200,50);
 		wait.add();
 	}
 }
@@ -461,10 +519,10 @@ function gameLoop(delta){
 
 	if(SCREEN == 0){
 
-		if(button_join.click){
+		/*if(button_join.click){
 			socket_join();
 			button_join.click = false;
-		}
+		}*/
 
 	}else if(SCREEN == 1){
 
@@ -472,8 +530,6 @@ function gameLoop(delta){
 }
 
 function paintOnline(id,xy,r,g,b){ //paint another canvas
-
-	console.log("pqintoasjiaijsa");
 
 	if(SCREEN == 1){
 
@@ -570,10 +626,9 @@ app.stage.on('pointerdown',function(e){
 	for(var i = 0;i < buttons.length;i++){
 
 		if(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h){
-			buttons[i].click = true;
-			buttons[i].graphics.tint = greensea;
+			buttons[i].doClick(true);
 		}else{
-			buttons[i].click = false;
+			buttons[i].doClick(false);
 		}
 	}
 
@@ -588,12 +643,15 @@ app.stage.on('pointerup',function(e){
 	}
 
 	for(var i = 0;i < buttons.length;i++){
-
-		buttons[i].click = false;
-		buttons[i].graphics.tint = turquoise;
+		buttons[i].doClick(false);
 	}
 
 });
+
+function onkeydown(e){
+	
+	inputbox.setText(inputbox.str + e.key);
+}
 
 /*******************************************************************/
 

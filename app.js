@@ -51,6 +51,13 @@ io.on('connection', function(socket) {
                 save(rooms[i]);
             }
         }
+    });
+    socket.on('disconnect',function() {
+        for (var i = 0; i < wait_list.length; i++) {
+            if(wait_list[i] == socket.id){
+                wait_list.splice(i,1);
+            }
+        }
     })
 });
 
@@ -60,11 +67,11 @@ server.listen(app.get('port'), function() {
 });
 function join() {
     if(wait_list.length >= 2){
-            createRoom(function(data,words) {
+            createRoom(function(data,words,data2) {
                 for (var i = 0; i < wait_list.length; i++) {
                     io.to(wait_list[i]).emit('join',data,words);
                 }
-                console.log(rooms);
+                rooms[data2].play=true;
             });
         wait_list=[];
     }
@@ -77,8 +84,9 @@ function createRoom(fn) {
         'name': name,
         'players': [],
         'timeMin': 1,
-    	'timeSec': 59,
-        'words':words[0]
+    	'timeSec': 61,
+        'words':words[0],
+        'play':false
     });
     for (var i = 0; i < wait_list.length; i++) {
         rooms[numbRoom2].players.push({
@@ -97,7 +105,7 @@ function createRoom(fn) {
             }
         }
     }
-    fn(name,rooms[numbRoom2].words);
+    fn(name,rooms[numbRoom2].words,numbRoom2);
 }
 
 function save(room) {
@@ -123,16 +131,18 @@ var juego = (function() {
 
     function actualizar() {
         for (var i = 0; i < rooms.length; i++) {
-            if (rooms[i].players.length > 0) {
-                if (rooms[i].timeMin > 0 || rooms[i].timeSec > 0) {
-                    if (rooms[i].timeSec > 0) {
-                        rooms[i].timeSec--;
+            if(rooms[i].play){
+                if (rooms[i].players.length > 0) {
+                    if (rooms[i].timeMin > 0 || rooms[i].timeSec > 0) {
+                        if (rooms[i].timeSec > 0) {
+                            rooms[i].timeSec--;
+                        } else {
+                            rooms[i].timeMin--;
+                            rooms[i].timeSec = 59;
+                        }
                     } else {
-                        rooms[i].timeMin--;
-                        rooms[i].timeSec = 59;
+                        
                     }
-                } else {
-                	
                 }
             }
         }

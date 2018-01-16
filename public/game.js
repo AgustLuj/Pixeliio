@@ -519,10 +519,10 @@ function gameLoop(delta){
 
 	if(SCREEN == 0){
 
-		/*if(button_join.click){
-			socket_join();
+		if(button_join.click){
+			socket_join(); //ACA TE PASO MI NOMBRE DE USUARIO EN EL FUTURO X2
 			button_join.click = false;
-		}*/
+		}
 
 	}else if(SCREEN == 1){
 

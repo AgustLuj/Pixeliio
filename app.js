@@ -96,7 +96,7 @@ io.on('connection', function(socket) {
 });
 
 /*************************************************/
-server.listen(8080, function() {
+server.listen(80, function() {
     console.log('El servidor esta corriendo en 8080 ' + cad);
 
 });
@@ -145,7 +145,7 @@ var juego = (function() {
                         rooms[i].timeSec = 59;
                     }
                 } else {
-
+                	
                 }
             }
         }

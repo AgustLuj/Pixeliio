@@ -84,6 +84,8 @@ var Button = function(x,y,str,color){
 	this.w;
 	this.h;
 
+	this.click = false;
+
 	this.color = color;
 	this.str = str;
 
@@ -101,7 +103,7 @@ var Button = function(x,y,str,color){
 	this.text.text.y = this.y + (this.h - this.text.text.height) / 2;
 
 	this.graphics = new PIXI.Graphics();
-	this.graphics.beginFill(color,1);
+	this.graphics.beginFill(getColor(255,255,255),1);
 	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,10);
 	this.graphics.endFill();
 
@@ -295,8 +297,12 @@ drawPalette();
 var color_picker = new ColorPicker();
 color_picker.show(false);
 
+var buttons = [];
+
 var text = new Text("00:00",410,20,50);
 var button = new Button(400,200,"Join",turquoise);
+
+buttons.push(button);
 
 text.add();
 
@@ -443,6 +449,7 @@ function paint(x,y){ //function that paints my own canvas :)
 		color_picker.show(true);
 
 	}else {
+
 		color_picker.show(false);
 	}
 }
@@ -463,12 +470,29 @@ app.stage.on('pointerdown',function(e){
 	click = true;
 	paint(mx,my);
 
+	for(var i = 0;i < buttons.length;i++){
+
+		if(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h){
+			buttons[i].click = true;
+			buttons[i].graphics.tint = alizarin;
+		}else{
+			buttons[i].click = false;
+		}
+	}
+
 });
 
 app.stage.on('pointerup',function(e){
 
 	click = false;
 	color_picker.show(false);
+
+
+		buttons[0].click = false;
+		buttons[0].graphics.tint = turquoise;
+
+	
+
 });
 
 /*******************************************************************/

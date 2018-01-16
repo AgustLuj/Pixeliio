@@ -20,3 +20,4 @@ socket.on('SPaint', function(id, xy, r, g, b) {
 socket.on('timer', function(min, sec) {
     setTime(min, sec);
 });
+var h = 0;

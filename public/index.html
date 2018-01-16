@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+
+		<title> - (°-°)/ - </title>
+		<meta charset = "utf-8"/>
+		<style type="text/css">
+			body{
+				margin: 0px;
+			}
+		</style>
+		<script type="'text/javascript'">
+			(function(){
+			 
+			    var _z = console;
+			    Object.defineProperty( window, "console", {
+			    get : function(){
+			        if( _z._commandLineAPI ){
+			        throw "Sorry, Can't exceute scripts!";
+			            }
+			        return _z; 
+			    },
+			    set : function(val){
+			        _z = val;
+			    }
+			    });
+			 
+			})();
+	</script>
+	</head>
+
+	<body>
+
+		<script type="text/javascript" src="socket.io/socket.io.js"></script>
+
+		<script src = "pixi.js"></script>
+		<script src = "socket.js"></script>
+
+		<script src = "game.js"></script>
+
+	</body>
+
+</html>

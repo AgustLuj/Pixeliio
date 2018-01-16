@@ -97,7 +97,7 @@ io.on('connection', function(socket) {
 
 /*************************************************/
 server.listen(80, function() {
-    console.log('El servidor esta corriendo en 8080 ' + cad);
+    console.log('El servidor esta corriendo en 80 ' + cad);
 
 });
 

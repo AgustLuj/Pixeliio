@@ -28,6 +28,7 @@ var turquoise = "0x1abc9c";
 var alizarin = "0xe74c3c";
 var midblue = "0x2c3e50";
 var clouds = "0xecf0f1";
+var greensea = "0x16a085";
 
 /*****************************************************************/
 
@@ -54,6 +55,17 @@ var Text = function(str,x,y,size){
 
 	this.size = size;
 
+	this.style2 = new PIXI.TextStyle({
+		fontFamily: 'Arial',
+	    fontSize: this.size,
+	    fontWeight: 'bold',
+	    fill: [getColorCSS(0,0,0)], 
+	});
+
+	this.text2 = new PIXI.Text(this.str,this.style2);
+	this.text2.x = this.x;
+	this.text2.y = this.y + 4;
+
 	this.style = new PIXI.TextStyle({
 		fontFamily: 'Arial',
 	    fontSize: this.size,
@@ -67,10 +79,23 @@ var Text = function(str,x,y,size){
 
 	this.setText = function(str){
 		this.text.text = str;
+		this.text2.text = str;
 	}
 
 	this.add = function(){
+		app.stage.addChild(this.text2);
 		app.stage.addChild(this.text);
+	}
+
+	this.set = function(x,y){
+
+		this.x = x;
+		this.y = y;
+
+		this.text.x = x;
+		this.text.y = y;
+		this.text2.x = x;
+		this.text2.y = y;
 	}
 }
 
@@ -99,12 +124,12 @@ var Button = function(x,y,str,color){
 
 	this.h = this.text.text.height + 20;
 
-	this.text.text.x = this.x + (this.w - this.text.text.width) / 2;
-	this.text.text.y = this.y + (this.h - this.text.text.height) / 2;
+	this.text.set(this.x + (this.w - this.text.text.width) / 2,this.y + (this.h - this.text.text.height) / 2);
 
 	this.graphics = new PIXI.Graphics();
 	this.graphics.beginFill(getColor(255,255,255),1);
 	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,10);
+	this.graphics.tint = turquoise;
 	this.graphics.endFill();
 
 	app.stage.addChild(this.graphics);
@@ -474,7 +499,7 @@ app.stage.on('pointerdown',function(e){
 
 		if(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h){
 			buttons[i].click = true;
-			buttons[i].graphics.tint = alizarin;
+			buttons[i].graphics.tint = greensea;
 		}else{
 			buttons[i].click = false;
 		}
@@ -487,11 +512,11 @@ app.stage.on('pointerup',function(e){
 	click = false;
 	color_picker.show(false);
 
+	for(var i = 0;i < buttons.length;i++){
 
-		buttons[0].click = false;
-		buttons[0].graphics.tint = turquoise;
-
-	
+		buttons[i].click = false;
+		buttons[i].graphics.tint = turquoise;
+	}
 
 });
 

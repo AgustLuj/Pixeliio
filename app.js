@@ -4,7 +4,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 const fs = require('fs');
 app.use(express.static('public'));
-
+app.set('port', (process.env.PORT || 5000));
 /*************************************************/
 
 var f = new Date();
@@ -96,9 +96,8 @@ io.on('connection', function(socket) {
 });
 
 /*************************************************/
-server.listen(8080, function() {
-    console.log('El servidor esta corriendo en 80 ' + cad);
-
+server.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'));
 });
 
 function createRoom() {

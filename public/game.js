@@ -79,6 +79,8 @@ var Button = function(x,y,str,color){
 	this.x = x;
 	this.y = y;
 
+	this.ww = 0;
+
 	this.w;
 	this.h;
 
@@ -87,8 +89,16 @@ var Button = function(x,y,str,color){
 
 	this.text = new Text(this.str,this.x,this.y,20);
 
-	this.w = this.text.text.width + 40;
-	this.h = this.text.text.height + 15;
+	this.w = this.text.text.width + 50;
+
+	if(this.ww != 0){
+		this.w = this.ww;
+	}
+
+	this.h = this.text.text.height + 20;
+
+	this.text.text.x = this.x + (this.w - this.text.text.width) / 2;
+	this.text.text.y = this.y + (this.h - this.text.text.height) / 2;
 
 	this.graphics = new PIXI.Graphics();
 	this.graphics.beginFill(color,1);

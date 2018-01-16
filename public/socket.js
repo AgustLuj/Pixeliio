@@ -3,16 +3,13 @@ var socket = io.connect({ forceNew: true });
 socket.on('recharge', function() {
     location.reload();
 });
-socket.on('joinRoom', function(data2) {
-    socket.emit('login', data2, function(data,data3) {
-        setRoom({'name':data2,'words':data3});
-        setId(data);
-
-    });
-});
-
 function socket_paint(id, xy, r, g, b) {
     socket.emit('paint', id, xy, r, g, b);
+}
+function socket_join() {
+	socket.emit('joinRoom',function() {
+		info("wait");
+	});
 }
 socket.on('SPaint', function(id, xy, r, g, b) {
     paintOnline(id, xy, r, g, b);
@@ -20,4 +17,9 @@ socket.on('SPaint', function(id, xy, r, g, b) {
 socket.on('timer', function(min, sec) {
     setTime(min, sec);
 });
-var h = 0;
+socket.on('join',function(data3,data2) {
+	    socket.emit('login',data3,function(data) {
+	    	setRoom({'name':data3,'words':data2});
+        	setId(socket.id);
+	    });
+})

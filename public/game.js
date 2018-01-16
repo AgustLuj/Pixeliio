@@ -7,6 +7,8 @@ app.ticker.add(delta => gameLoop(delta));
 
 var ID = -999;
 
+var SCREEN = 0; //0 = menu,1 = game,2 = joining/wait,
+
 var room = "none";
 var word = "none_";
 
@@ -45,6 +47,13 @@ app.stage.interactive = true;
 app.stage.addChild(back);
 
 /*****************************************************************/
+
+var InputBox = function(x,y,w){
+
+	this.x = x;
+	this.y = y;
+	this.w = w;
+}
 
 var Text = function(str,x,y,size){
 
@@ -99,14 +108,12 @@ var Text = function(str,x,y,size){
 	}
 }
 
-var Button = function(x,y,str,color){
+var Button = function(x,y,str,color,w){
 
 	this.x = x;
 	this.y = y;
 
-	this.ww = 0;
-
-	this.w;
+	this.w = w;
 	this.h;
 
 	this.click = false;
@@ -116,10 +123,8 @@ var Button = function(x,y,str,color){
 
 	this.text = new Text(this.str,this.x,this.y,20);
 
-	this.w = this.text.text.width + 50;
-
-	if(this.ww != 0){
-		this.w = this.ww;
+	if(this.text.text.width + 50 > this.w){
+		this.w = this.text.text.width + 50;
 	}
 
 	this.h = this.text.text.height + 20;
@@ -306,35 +311,78 @@ var ColorPicker = function(){
 	}
 }
 
-var image = new Image(32,1000 - 32 * SCALE - 20,700 - 32 * SCALE - 20,SCALE);
+/*****************************************************************************************/
 
+var image;
 var images = [];
-
-for(var x = 0;x < 3;x++){
-	for(var y = 0;y < 3;y++){
-		images.push(new Image(32,8 + x * 100,8 + y * 100,3));
-	}
-}
-
-var palette = new Palette(1000 - 32 * SCALE - 292,700 - 32 * SCALE - 20);
-drawPalette();
-
-var color_picker = new ColorPicker();
-color_picker.show(false);
 
 var buttons = [];
 
-var text = new Text("00:00",410,20,50);
-var button = new Button(400,200,"Join",turquoise);
+var palette;
+var color_picker;
+var clock; 
+var wait;
 
-buttons.push(button);
+var button_join;
 
-text.add();
+setScreen(0);
+
+/*****************************************************************************************/
+
+function setScreen(S){
+
+	SCREEN = S;
+
+	while(app.stage.children[0]){ 
+		app.stage.removeChild(app.stage.children[0]); 
+	}
+
+	app.stage.addChild(back);
+
+	if(S == 0){
+
+		button_join = new Button(400,200,"Join",turquoise,200);
+		buttons.push(button_join);
+
+	}else if(S == 1){
+
+		palette = new Palette(1000 - 32 * SCALE - 292,700 - 32 * SCALE - 20);
+		drawPalette();
+
+		image = new Image(32,1000 - 32 * SCALE - 20,700 - 32 * SCALE - 20,SCALE);
+
+		for(var x = 0;x < 3;x++){
+			for(var y = 0;y < 7;y++){
+				images.push(new Image(32,8 + x * 100,8 + y * 100,3));
+			}
+		}
+
+		color_picker = new ColorPicker();
+		color_picker.show(false);
+
+		clock = new Text("00:00",410,20,50);
+		clock.add();
+
+	}else if(S == 2){
+
+		wait = new Text("Esperando jugadores..",300,200,50);
+		wait.add();
+	}
+}
 
 /******************************************************************/
 
 function setId(data){
 	ID = data;
+}
+
+function info(data){
+
+	if(data == "wait"){
+
+		console.log("--> EN LISTA DE ESPERA");
+		setScreen(2);
+	}
 }
 
 function setRoom(data){
@@ -343,6 +391,8 @@ function setRoom(data){
 	word = data.word;
 
 	console.log(data);
+
+	setScreen(1);
 }
 
 function drawPalette(){
@@ -400,44 +450,63 @@ function drawPalette(){
 
 function setTime(m,s){
 
-	if(s < 10){s = "0" + s;}
-	text.setText(m + ":" + s);
+	if(SCREEN == 1){
+
+		if(s < 10){s = "0" + s;}
+		clock.setText(m + ":" + s);
+	}
 }
 
 function gameLoop(delta){
 
+	if(SCREEN == 0){
+
+		if(button_join.click){
+			socket_join();
+			button_join.click = false;
+		}
+
+	}else if(SCREEN == 1){
+
+	}
 }
 
 function paintOnline(id,xy,r,g,b){ //paint another canvas
 
-	if(id != ID){
+	console.log("pqintoasjiaijsa");
 
-		var flag = false;
+	if(SCREEN == 1){
 
-		for(var i = 0;i < images.length;i++){
+		if(id != ID){
 
-			if(images[i].id == id){
-
-				images[i].paintXY(xy,r,g,b);
-				flag = true;
-
-				break;
-			}
-		}
-
-		if(!flag){
+			var flag = false;
 
 			for(var i = 0;i < images.length;i++){
 
-				if(images[i].id == -9){
+				if(images[i].id == id){
 
-					images[i].id = id;
 					images[i].paintXY(xy,r,g,b);
+					flag = true;
 
 					break;
 				}
 			}
+
+			if(!flag){
+
+				for(var i = 0;i < images.length;i++){
+
+					if(images[i].id == -9){
+
+						images[i].id = id;
+						images[i].paintXY(xy,r,g,b);
+
+						break;
+					}
+				}
+			}
 		}
+
 	}
 }
 
@@ -484,7 +553,7 @@ app.stage.on('pointermove',function(e){
 	mx = e.data.getLocalPosition(app.stage).x;
 	my = e.data.getLocalPosition(app.stage).y;
 
-	if(click){
+	if(click && SCREEN == 1){
 		paint(mx,my);
 	}
 
@@ -493,7 +562,10 @@ app.stage.on('pointermove',function(e){
 app.stage.on('pointerdown',function(e){
 
 	click = true;
-	paint(mx,my);
+	
+	if(SCREEN == 1){
+		paint(mx,my);
+	}
 
 	for(var i = 0;i < buttons.length;i++){
 
@@ -510,7 +582,10 @@ app.stage.on('pointerdown',function(e){
 app.stage.on('pointerup',function(e){
 
 	click = false;
-	color_picker.show(false);
+
+	if(SCREEN == 1){
+		color_picker.show(false);
+	}
 
 	for(var i = 0;i < buttons.length;i++){
 

@@ -7,8 +7,12 @@ app.ticker.add(delta => gameLoop(delta));
 /*****************************************************************/
 
 var ID = -999;
+var USERNAME = "anonimo";
 
 var SCREEN = 0; //0 = menu,1 = game,2 = joining/wait,
+
+var WIDTH = 1000;
+var HEIGHT = 700;
 
 var room = "none";
 var word = "none_";
@@ -31,7 +35,7 @@ var turquoise = "0x1abc9c";
 var alizarin = "0xe74c3c";
 var midblue = "0x2c3e50";
 var clouds = "0xecf0f1";
-var greensea = "0x16a085";
+var greensea = "0x11856e";
 
 /*****************************************************************/
 
@@ -51,17 +55,19 @@ app.stage.addChild(back);
 
 var InputBox = function(x,y,w,size,color){
 
-	this.x = x;
 	this.y = y;
 
 	this.w = w;
 	this.h;
+
+	if(x == "CENTER"){this.x = (WIDTH - this.w) / 2;}else {this.x = x;}
 
 	this.click = false;
 	this.selected = false;
 
 	this.color = color;
 	this.str = "";
+	this.info = "Nombre";
 
 	this.text = new Text(this.str,this.x,this.y,size);
 
@@ -72,29 +78,45 @@ var InputBox = function(x,y,w,size,color){
 	this.graphics = new PIXI.Graphics();
 	this.graphics.lineStyle(2,getColor(255,255,255),1);
 	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,10);
-	this.graphics.tint = turquoise;
+	this.graphics.tint = greensea;
 
 	app.stage.addChild(this.graphics);
 	this.text.add();
 
-	this.doClick = function(bool){
+	this.setText = function(txt){
 
-		this.click = bool;
+		this.text.setText(txt);
 
-		if(this.click){
-			this.graphics.tint = greensea;
-			this.selected = !this.selected;
+		if(this.text.text.width > this.w - 10){
+			this.text.setText(this.str);
 		}else {
-			this.graphics.tint = turquoise;
+			this.str = txt;
+			this.text.set(this.x + (this.w - this.text.text.width) / 2,this.y + (this.h - this.text.text.height) / 2);
 		}
 	}
 
-	this.setText = function(txt){
+	this.tick = function(){
 
-		this.str = txt;
-		this.text.setText(this.str);
+		if(this.click){
+			this.selected = true;
+			this.click = false;
+		}
 
-		this.text.set(this.x + (this.w - this.text.text.width) / 2,this.y + (this.h - this.text.text.height) / 2);
+		if(this.selected){
+
+			this.graphics.tint = turquoise;
+			this.text.text.alpha = 1;
+
+		}else {
+			this.graphics.tint = greensea;
+			this.text.text.alpha = 0.5;
+		}
+
+		if(this.str == ""){
+			this.text.setText(this.info);
+			this.text.set(this.x + 10,this.y + (this.h - this.text.text.height) / 2);
+			this.text.text.alpha = 0.5;
+		}
 	}
 }
 
@@ -102,42 +124,26 @@ var Text = function(str,x,y,size){
 
 	this.str = str;
 
-	this.x = x;
+	if(x == "CENTER"){this.x = 0;}else {this.x = x;}
+
 	this.y = y;
 
 	this.size = size;
-
-	this.style2 = new PIXI.TextStyle({
-		fontFamily: 'Arial',
-	    fontSize: this.size,
-	    fontWeight: 'bold',
-	    fill: [getColorCSS(0,0,0)], 
-	});
-
-	this.text2 = new PIXI.Text(this.str,this.style2);
-	this.text2.x = this.x;
-	this.text2.y = this.y + 4;
 
 	this.style = new PIXI.TextStyle({
 		fontFamily: 'Arial',
 	    fontSize: this.size,
 	    fontWeight: 'bold',
-	    fill: [clouds], 
+	    dropShadow: true,
+    	dropShadowColor: getColorRGBA(0,0,0,120),
+    	dropShadowBlur: 10,
+    	dropShadowDistance: 2,
+	    fill: [getColor(255,255,255,255)], 
 	});
 
 	this.text = new PIXI.Text(this.str,this.style);
 	this.text.x = this.x;
 	this.text.y = this.y;
-
-	this.setText = function(str){
-		this.text.text = str;
-		this.text2.text = str;
-	}
-
-	this.add = function(){
-		app.stage.addChild(this.text2);
-		app.stage.addChild(this.text);
-	}
 
 	this.set = function(x,y){
 
@@ -146,20 +152,33 @@ var Text = function(str,x,y,size){
 
 		this.text.x = x;
 		this.text.y = y;
-		this.text2.x = x;
-		this.text2.y = y;
 	}
+
+	if(x == "CENTER"){this.set((WIDTH - this.text.width) / 2,this.y);}
+
+	this.setText = function(str){
+		this.text.text = str;
+	}
+
+	this.add = function(){
+		app.stage.addChild(this.text);
+	}
+
 }
 
 var Button = function(x,y,w,str,size,color){
 
-	this.x = x;
-	this.y = y;
-
 	this.w = w;
 	this.h;
 
+	this.y = y;
+
+	if(x == "CENTER"){this.x = (WIDTH - this.w) / 2;}else {this.x = x;}
+
 	this.click = false;
+	this.hover = false;
+	this.old_click = false;
+	this.delayclick = false;
 
 	this.color = color;
 	this.str = str;
@@ -170,27 +189,41 @@ var Button = function(x,y,w,str,size,color){
 		this.w = this.text.text.width + 50;
 	}
 
-	this.h = this.text.text.height + 20;
+	this.h = this.text.text.height + 18;
 
 	this.text.set(this.x + (this.w - this.text.text.width) / 2,this.y + (this.h - this.text.text.height) / 2);
 
 	this.graphics = new PIXI.Graphics();
 	this.graphics.beginFill(getColor(255,255,255),1);
-	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,10);
+	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,15);
 	this.graphics.tint = turquoise;
 	this.graphics.endFill();
 
 	app.stage.addChild(this.graphics);
 	this.text.add();
 
-	this.doClick = function(bool){
-
-		this.click = bool;
+	this.tick = function(){
 
 		if(this.click){
 			this.graphics.tint = greensea;
-		}else {
-			this.graphics.tint = turquoise;
+			this.old_click = this.click;
+		}else {	
+
+			this.delayclick = false;
+
+			if(this.old_click){
+				this.delayclick = true;
+				this.old_click = false;
+			}
+
+			if (!this.hover){
+
+				this.graphics.tint = turquoise;
+				this.graphics.alpha = 1;
+
+			}else{
+				if(this.graphics.alpha > 0.8){this.graphics.alpha -= 0.025;}
+			}	
 		}
 	}
 }
@@ -365,7 +398,37 @@ var ColorPicker = function(){
 	}
 }
 
+var Charge = function(x,y){
+
+	this.x = x;
+	this.y = y;
+
+	this.f = 1;
+	this.mode = 0;
+
+	this.graphics = new PIXI.Graphics();
+	app.stage.addChild(this.graphics);
+
+	this.tick = function(){
+
+		this.timer++;
+
+		this.graphics.clear();
+		this.graphics.lineStyle(4,alizarin,1);
+		this.graphics.arc(this.x,this.y,30,(Math.PI * 2) * (this.f - 0.4),(Math.PI * 2) * this.f);
+
+		if(this.mode == 0){
+			if(this.f > 0.02){this.f -= 0.02;}else {this.mode = 1;}
+		}else if(this.mode == 1){
+			if(this.f < 1){this.f += 0.02;}else {this.mode = 0;}
+		}
+		
+	}
+}
+
 /*****************************************************************************************/
+
+var aux = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "ñ", "l", "k", "j", "h", "g", "f", "d", "s", "a", "z", "x", "c", "v", "b", "n", "m", "A", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Ñ", "L", "K", "J", "H", "G", "F", "D", "S", "Z", "X", "C", "V", "B", "N", "M", " "];
 
 var image;
 var images = [];
@@ -375,10 +438,14 @@ var buttons = [];
 var palette;
 var color_picker;
 var clock; 
+var clock2;
 var wait;
+var text_users;
 
 var button_join;
 var inputbox;
+
+var charge;
 
 setScreen(0);
 
@@ -396,8 +463,8 @@ function setScreen(S){
 
 	if(S == 0){
 
-		button_join = new Button(400,200,200,"Ingresar",22,turquoise);
-		inputbox = new InputBox(400,140,200,22,turquoise);
+		inputbox = new InputBox("CENTER",290,300,20,turquoise);
+		button_join = new Button("CENTER",350,300,"Ingresar",22,turquoise);
 
 		buttons.push(button_join);
 		buttons.push(inputbox);
@@ -423,12 +490,22 @@ function setScreen(S){
 
 	}else if(S == 2){
 
-		wait = new Text("Buscando Partida..",300,200,50);
+		wait = new Text("Buscando Partidas..","CENTER",200,50);
 		wait.add();
+
+		charge = new Charge((WIDTH - 100) / 2 + 46,390);
+
+		clock2 = new Text("00:00","CENTER",305,25);
+		clock2.text.alpha = 0.5;
+		clock2.add();
+
+		text_users = new Text("usuarios online : ","CENTER",280,18);
+		text_users.text.alpha = 0.35;
+		text_users.add();
 	}
 }
 
-/******************************************************************/
+/*****************************************************************************************/
 
 function setId(data){
 	ID = data;
@@ -436,10 +513,23 @@ function setId(data){
 
 function info(data){
 
-	if(data == "wait"){
+	if(data.type == "wait"){
 
-		console.log("--> EN LISTA DE ESPERA");
-		setScreen(2);
+		//console.log("--> EN LISTA DE ESPERA --> " + data.users + " jugadores." + " tiempo : " + data.time);
+
+		if(SCREEN != 2){setScreen(2);}
+
+		var t = "00";
+
+		if(data.time != undefined){
+			if(data.time < 10){t = "0"+data.time;}else{t = data.time;}
+		}
+
+		if(data.users != undefined){
+			text_users.setText("usuarios online : "+data.users);
+		}
+
+		clock2.setText("00:"+t);
 	}
 }
 
@@ -517,15 +607,28 @@ function setTime(m,s){
 
 function gameLoop(delta){
 
+	for(var i = 0;i < buttons.length;i++){
+		buttons[i].tick();
+	}
+
 	if(SCREEN == 0){
 
-		if(button_join.click){
-			socket_join(); //ACA TE PASO MI NOMBRE DE USUARIO EN EL FUTURO X2
+		if(button_join.delayclick){
+
+			USERNAME = inputbox.str;
+
+			if(USERNAME == ""){USERNAME = "Pintor anonimo";}
+
+			socket_join(USERNAME);
+
 			button_join.click = false;
 		}
 
 	}else if(SCREEN == 1){
 
+	}else if(SCREEN == 2){
+
+		charge.tick();
 	}
 }
 
@@ -613,6 +716,28 @@ app.stage.on('pointermove',function(e){
 		paint(mx,my);
 	}
 
+	if(click){
+
+		for(var i = 0;i < buttons.length;i++){
+
+			if(!(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h)){
+				buttons[i].click = false;
+				buttons[i].old_click = false;
+			}
+		}
+
+	}else {
+
+		for(var i = 0;i < buttons.length;i++){
+
+			if(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h){
+				buttons[i].hover = true;
+			}else {
+				buttons[i].hover = false;
+			}
+		}
+	}
+
 });
 
 app.stage.on('pointerdown',function(e){
@@ -626,9 +751,10 @@ app.stage.on('pointerdown',function(e){
 	for(var i = 0;i < buttons.length;i++){
 
 		if(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h){
-			buttons[i].doClick(true);
+			buttons[i].click = true;
 		}else{
-			buttons[i].doClick(false);
+			buttons[i].click = false;
+			buttons[i].selected = false;
 		}
 	}
 
@@ -643,15 +769,36 @@ app.stage.on('pointerup',function(e){
 	}
 
 	for(var i = 0;i < buttons.length;i++){
-		buttons[i].doClick(false);
+		buttons[i].click = false;
 	}
 
 });
 
 function onkeydown(e){
 	
-	inputbox.setText(inputbox.str + e.key);
+	var k = e.key;
+
+	for(var i = 0;i < buttons.length;i++){
+		
+		if(buttons[i].selected){
+
+			if(e.keyCode == 8){
+				buttons[i].setText(buttons[i].str.slice(0,buttons[i].str.length - 1));
+			}else {
+
+				var flag = false;
+
+				for(var j = 0;j < aux.length;j++){
+					if(k == aux[j]){flag = true;}
+				}
+
+				if(flag){buttons[i].setText(buttons[i].str + e.key);}
+			}
+
+		}
+	}
 }
+
 
 /*******************************************************************/
 
@@ -665,6 +812,10 @@ function getHex(n) {
 
 function getColor(r,g,b){
 	return '0x' + getHex(r) + getHex(g) + getHex(b);
+}
+
+function getColorRGBA(r,g,b,a){
+	return '0x' + getHex(r) + getHex(g) + getHex(b) + getHex(a);
 }
 
 function getColorCSS(r,g,b){

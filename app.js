@@ -16,7 +16,9 @@ var rooms = [];
 var numbRoom = 0;
 var size = 32
 var wait_list=[];
-var time=setInterval(join, 5000);
+var timers = 60;
+var info;
+var time = setInterval(join, 5000);
 /*************************************************/
 io.on('connection', function(socket) {
     if (soc) {
@@ -28,8 +30,11 @@ io.on('connection', function(socket) {
        socket.join(data);
        fn("joined");
     })
-    socket.on('joinRoom',function(fn) {
-        wait_list.push(socket.id);
+    socket.on('joinRoom',function(name,fn) {
+        wait_list.push({'id':socket.id,'name':name});
+        if(wait_list.length == 1){
+           time = setInterval(info, 1000)
+        }
         fn();
     })
     socket.on('paint', function(id, xy, r, g, b) {
@@ -54,7 +59,7 @@ io.on('connection', function(socket) {
     });
     socket.on('disconnect',function() {
         for (var i = 0; i < wait_list.length; i++) {
-            if(wait_list[i] == socket.id){
+            if(wait_list[i].id == socket.id){
                 wait_list.splice(i,1);
             }
         }
@@ -66,10 +71,10 @@ server.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
 function join() {
-    if(wait_list.length >= 2){
+    if(wait_list.length >= 3){
             createRoom(function(data,words,data2) {
                 for (var i = 0; i < wait_list.length; i++) {
-                    io.to(wait_list[i]).emit('join',data,words);
+                    io.to(wait_list[i].id).emit('join',data,words,wait_list[i].name);
                 }
                 rooms[data2].play=true;
             });
@@ -90,7 +95,7 @@ function createRoom(fn) {
     });
     for (var i = 0; i < wait_list.length; i++) {
         rooms[numbRoom2].players.push({
-                'id': wait_list[i],
+                'id': wait_list[i].id,
                 'image': [{
                 'size': size,
                 'pixels': []
@@ -98,7 +103,7 @@ function createRoom(fn) {
         });
 
         for (var q = 0; q < rooms[numbRoom2].players.length; q++) {
-            if (rooms[numbRoom2].players[q].id == wait_list[i]) {
+            if (rooms[numbRoom2].players[q].id == wait_list[i].id) {
                 for (var j = 0; j < size * size; j++) {
                     rooms[numbRoom2].players[q].image[0].pixels.push({ 'r': 255, 'g': 255, 'b': 255 });
                 }
@@ -107,7 +112,16 @@ function createRoom(fn) {
     }
     fn(name,rooms[numbRoom2].words,numbRoom2);
 }
-
+function info() {
+    for (var i = 0; i < wait_list.length; i++) {
+            io.to(wait_list[i].id).emit('info',wait_list.length,timers);
+    }
+    if(timers <=0){
+        timers = 60;
+    }else{
+        timers -= 1;
+    }
+}
 function save(room) {
     var obj;
     fs.readFile("file.json", 'utf8', function(err, data) {
@@ -159,7 +173,6 @@ var juego = (function() {
     function loop() {
         actualizar();
         dibujar();
-
         timer = setTimeout(loop, velocidad);
     }
 

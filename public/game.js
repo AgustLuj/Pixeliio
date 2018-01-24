@@ -17,6 +17,8 @@ var HEIGHT = 700;
 var room = "none";
 var word = "none_";
 
+var voted = false;
+
 var mx = -99;
 var my = -99;
 
@@ -477,6 +479,7 @@ var aux = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "q", "w", "e", "r",
 var image;
 var images = [];
 var image_names = [];
+var img = [];
 
 var buttons = [];
 
@@ -555,6 +558,8 @@ function setScreen(S){
 
 	}else if(S == 3){
 
+		voted = false;
+
 		var text = new Text("Se acabó el tiempo","CENTER",50,50);
 		text.add();
 
@@ -563,7 +568,7 @@ function setScreen(S){
 
 		//CREATE IMAGES FOR VOTING <--
 
-		var img = [];
+		img = [];
 		var count = 0;
 
 		for(var i = 0;i < images.length;i++){
@@ -572,6 +577,7 @@ function setScreen(S){
 
 		for(var i = 0;i < count;i++){
 			img.push(new Image(32,i * 166.666666 - (Math.trunc(i / 6) * WIDTH),160 + 166.666666 * (Math.trunc(i / 6)),5,images[i].pixels));
+			img[img.length - 1].id = images[i].id;
 		}
 	}
 }
@@ -585,8 +591,6 @@ function setId(data){
 function info(data){
 
 	if(data.type == "wait"){
-
-		//console.log("--> EN LISTA DE ESPERA --> " + data.users + " jugadores." + " tiempo : " + data.time);
 
 		if(SCREEN != 2){setScreen(2);}
 
@@ -604,7 +608,34 @@ function info(data){
 
 	}else if(data.type == "finish"){
 
-		setScreen(3);
+		if(SCREEN != 3){setScreen(3);}
+
+	}else if(data.type == "finish_votes"){
+
+		img.push(new Image(32,img.length * 166.666666 - (Math.trunc(img.length / 6) * WIDTH),160 + 166.666666 * (Math.trunc(img.length / 6)),5,image.pixels));
+		img[img.length - 1].id = ID;
+
+		for(var i = 0;i < img.length;i++){
+			for(var j = 0;j < data.players.length;j++){
+
+				if(img[i].id == data.players[j].id){
+
+					var t = new Text(data.players[j].votes,0,0,40);
+					t.add();
+
+					t.set(img[i].offx + ((img[i].size * img[i].scale) - t.text.width) / 2,img[i].offy + ((img[i].size * img[i].scale) - t.text.height) / 2);
+
+					for(k = 0;k < img[i].graphics.length;k++){
+
+						if(img[i].id != ID){
+							img[i].graphics[k].alpha = 0.3;
+						}else {
+							img[i].graphics[k].alpha = 0.5;
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -847,6 +878,9 @@ app.stage.on('pointermove',function(e){
 				}
 			}
 		}
+
+	}else if(SCREEN == 3){
+
 	}
 
 	if(click){
@@ -889,6 +923,22 @@ app.stage.on('pointerdown',function(e){
 			buttons[i].click = false;
 			buttons[i].selected = false;
 		}
+	}
+
+	if(SCREEN == 3){
+
+		if(!voted){
+
+			for(var i = 0;i < img.length;i++){
+
+				if(mx > img[i].offx && mx < img[i].offx + img[i].size * img[i].scale && my > img[i].offy && my < img[i].offy + img[i].size * img[i].scale){
+					socket_addVote(img[i].id);
+				}
+			}
+
+			voted = true;
+		}
+
 	}
 
 });

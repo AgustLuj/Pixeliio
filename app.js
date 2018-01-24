@@ -16,7 +16,7 @@ var rooms = [];
 var numbRoom = 0;
 var size = 32
 var wait_list = [];
-var timers = 5;
+var timers = 10;
 var info;
 var jugadores = 18;
 /*************************************************/
@@ -49,7 +49,23 @@ io.on('connection', function(socket) {
                 }
             }
         }
+       /*infoPlayer(id, function(i, j) {
+            rooms[i].players[j].image[0].pixels[xy].r = r;
+            rooms[i].players[j].image[0].pixels[xy].g = g;
+            rooms[i].players[j].image[0].pixels[xy].b = b;
+            
+            io.sockets.in(rooms[i].name).emit('SPaint', id, rooms[i].players[j].name, xy, r, g, b)
+        })*/
     });
+    socket.on('vote', function(data) {
+        infoPlayer(data, function(i, j) {
+            rooms[i].players[j].votes++;
+            rooms[i].votes++;
+            if (rooms[i].votes == rooms[i].players.length) {
+                io.sockets.in(rooms[i].name).emit('infoVotes',rooms[i].players);
+            }
+        });
+    })
     socket.on('disconnect', function() {
         for (var i = 0; i < wait_list.length; i++) {
             if (wait_list[i].id == socket.id) {
@@ -64,7 +80,7 @@ io.on('connection', function(socket) {
         for (var i = 0; i < wait_list.length; i++) {
             io.to(wait_list[i].id).emit('info', wait_list.length, timers);
         }
-    })
+    });
 });
 
 /*************************************************/
@@ -72,9 +88,20 @@ server.listen(app.get('port'), function() {
     console.log('Node app is running on port', app.get('port'), cad);
 });
 
+function infoPlayer(id, fn) {
+    for (var i = 0; i < rooms.length; i++) {
+        for (var j = 0; j < rooms[i].players.length; j++) {
+            if (rooms[i].players[j].id == id) {
+                fn(i, j);
+                break;
+            }
+        }
+    }
+}
+
 function join() {
 
-    if (wait_list.length < jugadores - 1) { //ACÁ CAMBIÉ PARA QUE, CON UN SOLO USUARIO, CREE UNA ROOM <----
+    if (wait_list.length < jugadores - 1) {
         createRoom(function(data, words, data2) {
             for (var i = 0; i < wait_list.length; i++) {
                 io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
@@ -97,7 +124,8 @@ function createRoom(fn) {
         'timeMin': 2,
         'timeSec': 60,
         'words': words[0],
-        'play': false
+        'play': false,
+        'votes': 0
     });
     for (var i = 0; i < wait_list.length; i++) {
         rooms[numbRoom2].players.push({
@@ -106,7 +134,8 @@ function createRoom(fn) {
             'image': [{
                 'size': size,
                 'pixels': []
-            }]
+            }],
+            'votes': 0
         });
 
         for (var q = 0; q < rooms[numbRoom2].players.length; q++) {
@@ -125,7 +154,7 @@ function info() {
         io.to(wait_list[i].id).emit('info', wait_list.length, timers);
     }
     if (timers <= 0) {
-        if (wait_list.length > 1 ) {
+        if (wait_list.length > 1) {
             createRoom(function(data, words, data2) {
                 for (var i = 0; i < wait_list.length; i++) {
                     io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
@@ -135,7 +164,7 @@ function info() {
             wait_list = [];
             clearTimeout(time);
             timers = 59
-        }else{
+        } else {
             timers = 59;
         }
     } else {

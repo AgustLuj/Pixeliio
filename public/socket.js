@@ -11,6 +11,9 @@ function socket_join(name) {
 		info({'type':"wait"});
 	});
 }
+function socket_addVote(data) {
+	socket.emit('vote',data);
+}
 socket.on('SPaint', function(id, name, xy, r, g, b) {
     paintOnline(id, name, xy, r, g, b);
 });
@@ -28,4 +31,7 @@ socket.on('info',function(length,time) {
 });
 socket.on('finish',function() {
 	info({'type':"finish"})
+});
+socket.on('infoVotes',function(data) {
+	info({'type':"finish_votes",'players':data})
 })

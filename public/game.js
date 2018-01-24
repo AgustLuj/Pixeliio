@@ -228,7 +228,7 @@ var Button = function(x,y,w,str,size,color){
 	}
 }
 
-var Image = function(size,offx,offy,scale){
+var Image = function(size,offx,offy,scale,pix){
 
 	this.size = size;
 	this.pixels = [];
@@ -238,9 +238,16 @@ var Image = function(size,offx,offy,scale){
 	this.scale = scale;
 
 	this.id = -9;
+	this.name = "?";
 
-	for(var i = 0;i < this.size * this.size;i++){
-		this.pixels.push({'r' : 255,'g' : 255,'b' : 255});
+	if(pix == null){
+
+		for(var i = 0;i < this.size * this.size;i++){
+			this.pixels.push({'r' : 255,'g' : 255,'b' : 255});
+		}
+
+	}else {
+		this.pixels = pix;
 	}
 
 	this.graphics = [];
@@ -251,7 +258,7 @@ var Image = function(size,offx,offy,scale){
 
 		var g = this.graphics[this.graphics.length - 1];
 
-		g.beginFill(getColor(255,255,255),1);
+		g.beginFill(getColor(this.pixels[i].r,this.pixels[i].g,this.pixels[i].b),1);
 		g.lineStyle(0,0x000000);
 		g.drawRect(offx + getX(i,this.size) * scale,offy + getY(i,this.size) * scale,scale,scale);
 		g.endFill();
@@ -287,8 +294,8 @@ var Image = function(size,offx,offy,scale){
 
 	this.getPixel = function(x,y){
 
-		var xx = Math.trunc(x - this.offx);
-		var yy = Math.trunc(y - this.offy);
+		var xx = Math.trunc((x - this.offx) / SCALE);
+		var yy = Math.trunc((y - this.offy) / SCALE);
 
 		if (xx >= 0 && xx < this.size && yy >= 0 && yy < this.size){
 
@@ -426,12 +433,50 @@ var Charge = function(x,y){
 	}
 }
 
+var Slider = function(x,y,w){
+
+	this.x = x;
+	this.y = y;
+
+	this.w = w;
+	this.h = 40;
+
+	this.f = 0;
+
+	this.click = false;
+
+	this.graphics_bar = new PIXI.Graphics();
+	this.graphics_bar.beginFill(getColor(255,255,255),1);
+	this.graphics_bar.drawRoundedRect(this.x,this.y + 14,this.w,7,5);
+	this.graphics_bar.endFill();
+
+	this.graphics_circle = new PIXI.Graphics();
+	this.graphics_circle.beginFill(turquoise);
+	this.graphics_circle.drawCircle(0,this.y + 16,10);
+	this.graphics_circle.endFill();
+
+	app.stage.addChild(this.graphics_bar);
+	app.stage.addChild(this.graphics_circle);
+
+	this.tick = function(){
+		
+		if(this.click){
+			
+			var xx = (mx - 1) - this.x;
+			this.f = xx / this.w;
+		}
+
+		this.graphics_circle.x = this.x + this.f * this.w;
+	}
+}
+
 /*****************************************************************************************/
 
 var aux = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "ñ", "l", "k", "j", "h", "g", "f", "d", "s", "a", "z", "x", "c", "v", "b", "n", "m", "A", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Ñ", "L", "K", "J", "H", "G", "F", "D", "S", "Z", "X", "C", "V", "B", "N", "M", " "];
 
 var image;
 var images = [];
+var image_names = [];
 
 var buttons = [];
 
@@ -446,6 +491,7 @@ var button_join;
 var inputbox;
 
 var charge;
+var slider;
 
 setScreen(0);
 
@@ -488,6 +534,10 @@ function setScreen(S){
 		clock = new Text("00:00",400,20,50);
 		clock.add();
 
+		slider = new Slider(1000 - 32 * SCALE - 292,570,255);
+
+		buttons.push(slider);
+
 	}else if(S == 2){
 
 		wait = new Text("Buscando Partidas..","CENTER",200,50);
@@ -502,6 +552,27 @@ function setScreen(S){
 		text_users = new Text("usuarios online : ","CENTER",280,18);
 		text_users.text.alpha = 0.35;
 		text_users.add();
+
+	}else if(S == 3){
+
+		var text = new Text("Se acabó el tiempo","CENTER",50,50);
+		text.add();
+
+		var text2 = new Text("Votá a tu favorito","CENTER",115,20);
+		text2.add();
+
+		//CREATE IMAGES FOR VOTING <--
+
+		var img = [];
+		var count = 0;
+
+		for(var i = 0;i < images.length;i++){
+			if(images[i].id != -9){count++;}
+		}
+
+		for(var i = 0;i < count;i++){
+			img.push(new Image(32,i * 166.666666 - (Math.trunc(i / 6) * WIDTH),160 + 166.666666 * (Math.trunc(i / 6)),5,images[i].pixels));
+		}
 	}
 }
 
@@ -530,6 +601,10 @@ function info(data){
 		}
 
 		clock2.setText("00:"+t);
+
+	}else if(data.type == "finish"){
+
+		setScreen(3);
 	}
 }
 
@@ -608,7 +683,10 @@ function setTime(m,s){
 function gameLoop(delta){
 
 	for(var i = 0;i < buttons.length;i++){
-		buttons[i].tick();
+		
+		if(buttons[i].tick != undefined){
+			buttons[i].tick();
+		}
 	}
 
 	if(SCREEN == 0){
@@ -618,7 +696,6 @@ function gameLoop(delta){
 			USERNAME = inputbox.str;
 
 			if(USERNAME == ""){USERNAME = "Pintor anonimo";}
-
 			socket_join(USERNAME);
 
 			button_join.click = false;
@@ -632,7 +709,7 @@ function gameLoop(delta){
 	}
 }
 
-function paintOnline(id,xy,r,g,b){ //paint another canvas
+function paintOnline(id,name,xy,r,g,b){ //paint another canvas
 
 	if(SCREEN == 1){
 
@@ -658,7 +735,12 @@ function paintOnline(id,xy,r,g,b){ //paint another canvas
 					if(images[i].id == -9){
 
 						images[i].id = id;
+						images[i].name = name;
 						images[i].paintXY(xy,r,g,b);
+
+						image_names[i] = new Text(name,images[i].offx,images[i].offy,12);
+						image_names[i].text.visible = false;
+						image_names[i].add();
 
 						break;
 					}
@@ -671,38 +753,65 @@ function paintOnline(id,xy,r,g,b){ //paint another canvas
 
 function paint(x,y){ //function that paints my own canvas :) 
 
-	var s = SCALE;
+	var xx = Math.trunc((x - image.offx) / SCALE);
+	var yy = Math.trunc((y - image.offy) / SCALE);
 
-	if(x > image.offx && x < image.offx + image.size * s && y > image.offy && y < image.offy + image.size * s){
-
-		var xx = Math.trunc((x - image.offx) / s);
-		var yy = Math.trunc((y - image.offy) / s);
+	if(xx >= 0 && xx < image.size && yy >= 0 && yy < image.size){
 
 		if(xx != oldx || yy != oldy){
 
-			image.paint(xx,yy,R,G,B);
-			image.socket_paint(xx,yy,R,G,B);
+			var color = image.getPixel(x,y);
 
-			oldx = xx;
-			oldy = yy;
+			if(R != color.r || G != color.g || B != color.b){
+
+				image.paint(xx,yy,R,G,B);
+				image.socket_paint(xx,yy,R,G,B);
+
+				oldx = xx;
+				oldy = yy;
+			}
 		}
+	}
+}
+
+function pick_color(x,y){
+
+	var color = palette.image.getPixel(x,y);
+
+	R = color.r;
+	G = color.g;
+	B = color.b;
+
+	color_picker.setPos(mx,my);
+	color_picker.setColor(R,G,B);
+	color_picker.show(true);
+}
+
+function mouseInput(){
+
+	if(mx > image.offx && mx < image.offx + image.size * SCALE && my > image.offy && my < image.offy + image.size * SCALE){
 
 		color_picker.show(false);
 
-	}else if(x >= palette.x && x < palette.x + 255 && y >= palette.y && y < palette.y + 255){
+		var rad = slider.f * 10;
 
-		var color = palette.image.getPixel(x,y);
+		if(rad < 1){rad = 1;}
 
-		R = color.r;
-		G = color.g;
-		B = color.b;
+		for(var x = -rad;x < rad;x++){
+			for(var y = -rad;y < rad;y++){
 
-		color_picker.setPos(mx,my);
-		color_picker.setColor(R,G,B);
+				if(x * x + y * y < rad * rad){
+					paint(mx + x * SCALE,my + y * SCALE);
+				}
+			}
+		}
+
+	}else if(mx > palette.x && mx < palette.x + 255 && my > palette.y && my < palette.y + 255){
+
 		color_picker.show(true);
+		pick_color(mx,my);
 
 	}else {
-
 		color_picker.show(false);
 	}
 }
@@ -712,8 +821,32 @@ app.stage.on('pointermove',function(e){
 	mx = e.data.getLocalPosition(app.stage).x;
 	my = e.data.getLocalPosition(app.stage).y;
 
-	if(click && SCREEN == 1){
-		paint(mx,my);
+	if(SCREEN == 1){
+
+		if(click){
+			mouseInput();
+		}else {
+
+			for(var i = 0;i < images.length;i++){
+
+				if(mx > images[i].offx && mx < images[i].offx + images[i].size * images[i].scale && my > images[i].offy && my < images[i].offy + images[i].size * images[i].scale){
+
+					for(var j = 0;j < images[i].graphics.length;j++){
+						images[i].graphics[j].alpha = 0.3;
+					}
+
+					if(image_names[i] != null){image_names[i].text.visible = true;}
+
+				}else {
+
+					for(var j = 0;j < images[i].graphics.length;j++){
+						images[i].graphics[j].alpha = 1;
+					}
+
+					if(image_names[i] != null){image_names[i].text.visible = false;}
+				}
+			}
+		}
 	}
 
 	if(click){
@@ -745,7 +878,7 @@ app.stage.on('pointerdown',function(e){
 	click = true;
 	
 	if(SCREEN == 1){
-		paint(mx,my);
+		mouseInput();
 	}
 
 	for(var i = 0;i < buttons.length;i++){

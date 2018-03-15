@@ -232,67 +232,6 @@ var Button = function(x,y,w,str,size,color){
 	}
 }
 
-var ImageButton = function(x,y,w,h,color){
-
-	this.w = w;
-	this.h = h;
-
-	this.y = y;
-
-	if(x == "CENTER"){this.x = (WIDTH - this.w) / 2;}else {this.x = x;}
-
-	this.click = false;
-	this.hover = false;
-	this.old_click = false;
-	this.delayclick = false;
-
-	this.canselect = false;
-	this.selected = false;
-
-	this.switched = false;
-	this.canswitch = false;
-
-	this.color = color;
-
-	this.graphics = new PIXI.Graphics();
-	this.graphics.beginFill(getColor(255,255,255),1);
-	this.graphics.drawRoundedRect(this.x,this.y,this.w,this.h,15);
-	this.graphics.tint = turquoise;
-	this.graphics.endFill();
-
-	app.stage.addChild(this.graphics);
-
-	this.tick = function(){
-
-		if(this.click){
-			this.graphics.tint = greensea;
-			this.old_click = this.click;
-		}else {	
-
-			this.delayclick = false;
-
-			if(this.old_click){
-
-				this.delayclick = true;
-				this.old_click = false;
-
-				if(this.canselect){
-					this.selected = !this.selected;
-				}
-			}
-
-			if (!this.hover){
-
-				this.graphics.tint = turquoise;
-				this.graphics.alpha = 1;
-
-			}else{
-				if(this.graphics.alpha > 0.8){this.graphics.alpha -= 0.025;}
-			}	
-		}
-	}
-}
-
 var Image = function(size,offx,offy,scale,pix){
 
 	this.size = size;
@@ -333,17 +272,13 @@ var Image = function(size,offx,offy,scale,pix){
 
 	this.paint = function(x,y,r,g,b){
 
-		if(x >= 0 && x < this.size && y >= 0 && y < this.size){
+		var xy = getXY(x,y,this.size);
 
-			var xy = getXY(x,y,this.size);
+		this.pixels[xy].r = r;
+		this.pixels[xy].g = g;
+		this.pixels[xy].b = b;
 
-			this.pixels[xy].r = r;
-			this.pixels[xy].g = g;
-			this.pixels[xy].b = b;
-
-			this.graphics[xy].tint = getColor(r,g,b);
-	
-		}
+		this.graphics[xy].tint = getColor(r,g,b);
 	}
 
 	this.paintXY = function(xy,r,g,b){
@@ -357,11 +292,8 @@ var Image = function(size,offx,offy,scale,pix){
 
 	this.socket_paint = function(x,y,r,g,b){
 
-		if(x >= 0 && y >= 0 && x < this.size && y < this.size){
-
-			var xy = getXY(x,y,this.size);
-			socket_paint(ID,xy,Math.trunc(r),Math.trunc(g),Math.trunc(b));
-		}
+		var xy = getXY(x,y,this.size);
+		socket_paint(ID,xy,Math.trunc(r),Math.trunc(g),Math.trunc(b));
 	}
 
 	this.getPixel = function(x,y){
@@ -372,17 +304,7 @@ var Image = function(size,offx,offy,scale,pix){
 		if (xx >= 0 && xx < this.size && yy >= 0 && yy < this.size){
 
 			var xy = getXY(xx,yy,this.size);
-			var c = {'r':this.pixels[xy].r,'g':this.pixels[xy].g,'b':this.pixels[xy].b};
-			return c;
-		}
-	}
-
-	this.getPixelAt = function(x,y){
-
-		if(x >= 0 && x < this.size && y >= 0 && y < this.size){
-
-			var c = {'r':this.pixels[getXY(x,y,this.size)].r,'g':this.pixels[getXY(x,y,this.size)].g,'b':this.pixels[getXY(x,y,this.size)].b};
-			return c;
+			return this.pixels[xy];
 		}
 	}
 }
@@ -424,13 +346,6 @@ var VImage = function(size){
 
 			var xy = getXY(xx,yy,this.size);
 			return this.pixels[xy];
-		}
-	}
-
-	this.getPixelAt = function(x,y){
-
-		if(x >= 0 && x < this.size && y >= 0 && y < this.size){
-			return this.pixels[getXY(x,y,this.size)];
 		}
 	}
 }
@@ -491,47 +406,6 @@ var ColorPicker = function(){
 
 	this.setColor = function(r,g,b){
 		this.graphics2.tint = getColor(r,g,b);
-	}
-}
-
-var ColorRadius = function(){
-
-	this.x = 0;
-	this.y = 0;
-	this.r = 20;
-
-	this.graphics = new PIXI.Graphics();
-	this.graphics.lineStyle(1,getColor(0,0,0),1);
-	this.graphics.drawCircle(0,0,this.r);
-
-	app.stage.addChild(this.graphics);
-
-	this.setPos = function(x,y){
-
-		if(this.x != x || this.y != y){
-
-			this.x = x;
-			this.y = y;
-
-			this.graphics.x = x;
-			this.graphics.y = y;
-		}
-	}
-
-	this.show = function(bool){
-		this.graphics.visible = bool;
-	}
-
-	this.setSize = function(size){
-
-		if(this.r != size){
-
-			this.r = size;
-
-			this.graphics.clear();
-			this.graphics.lineStyle(1,getColor(0,0,0),1);
-			this.graphics.drawCircle(0,0,this.r);
-		}
 	}
 }
 
@@ -630,8 +504,8 @@ var ParticleRain = function(){
 
 	this.particles = [];
 
-	for(var i = 0;i < 2000;i++){
-		this.particles.push(new Particle(Math.random() * WIDTH,-500 + Math.random() * 500));
+	for(var i = 0;i < 1000;i++){
+		this.particles.push(new Particle(Math.random() * WIDTH,-300 + Math.random() * 300));
 	}
 
 	this.tick = function(){
@@ -655,16 +529,10 @@ var buttons = [];
 
 var palette;
 var color_picker;
-var color_radius;
 var clock; 
 var clock2;
 var wait;
 var text_users;
-
-var btn_pencil;
-var btn_brush;
-var btn_fill;
-var btn_erase;
 
 var button_join;
 var inputbox;
@@ -675,9 +543,6 @@ var slider;
 var timer = 0;
 
 var pr;
-
-var button_exit;
-var button_search;
 
 setScreen(0);
 
@@ -717,30 +582,12 @@ function setScreen(S){
 		color_picker = new ColorPicker();
 		color_picker.show(false);
 
-		color_radius = new ColorRadius();
-		color_radius.show(false);
-
 		clock = new Text("00:00",400,20,50);
 		clock.add();
 
-		slider = new Slider(1000 - 32 * SCALE - 292,630,255);
+		slider = new Slider(1000 - 32 * SCALE - 292,570,255);
 
 		buttons.push(slider);
-
-		btn_pencil = new ImageButton(322,565,50,50,turquoise);
-		btn_brush = new ImageButton(378,565,50,50,turquoise);
-		btn_fill = new ImageButton(434,565,50,50,turquoise);
-		btn_erase = new ImageButton(490,565,50,50,turquoise);
-
-		btn_pencil.canswitch = true;
-		btn_brush.canswitch = true;
-		btn_fill.canswitch = true;
-		btn_erase.canswitch = true;
-
-		buttons.push(btn_pencil);
-		buttons.push(btn_brush);
-		buttons.push(btn_fill);
-		buttons.push(btn_erase);
 
 	}else if(S == 2){
 
@@ -783,16 +630,7 @@ function setScreen(S){
 
 	}else if(S == 4){
 
-		var t = "";
-
-		if(winner.id == ID){
-			t = "¡¡GANASTE!!";
-			pr = new ParticleRain();
-		}else {
-			t = "GANADOR ☻";
-		}
-
-		var text = new Text(t,"CENTER",50,60);
+		var text = new Text("¡GANADOR!","CENTER",50,60);
 		text.add();
 
 		var text2 = new Text(winner.name,"CENTER",150,30);
@@ -801,16 +639,7 @@ function setScreen(S){
 
 		var img_winner = new Image(32,(WIDTH - 32 * 10) / 2,250,10,winner.image[0].pixels);
 
-		button_exit = new Button("CENTER",600,300,"Volver",22,turquoise);
-		buttons.push(button_exit);
-
-	}else if(S == 5){
-
-		button_search = new Button("CENTER",300,300,"Buscar Partida",22,turquoise);
-		buttons.push(button_search);
-
-		var text = new Text("@"+USERNAME,20,20,30);
-		text.add();
+		pr = new ParticleRain();
 	}
 }
 
@@ -876,14 +705,6 @@ function info(data){
 		winner = data.winner;
 		console.log(data);
 	}
-}
-
-function reset(){
-
-	room = "none";
-	word = "none_";
-
-	voted = false;
 }
 
 function fin(){
@@ -976,11 +797,11 @@ function gameLoop(delta){
 		if(button_join.delayclick){
 
 			USERNAME = inputbox.str;
+
 			if(USERNAME == ""){USERNAME = "Pintor anonimo";}
+			socket_join(USERNAME);
 
 			button_join.click = false;
-
-			setScreen(5);
 		}
 
 	}else if(SCREEN == 1){
@@ -996,26 +817,7 @@ function gameLoop(delta){
 
 	}else if(SCREEN == 4){
 
-		if(pr != undefined){pr.tick();}
-
-		if(button_exit.delayclick){
-
-			finish();
-			button_exit.delayclick = false;
-
-			setScreen(5);
-
-			reset();
-		}
-
-	}else if(SCREEN == 5){
-
-		if(button_search.delayclick){
-
-			socket_join(USERNAME);
-
-			button_search.click = false;
-		}
+		pr.tick();
 	}
 }
 
@@ -1061,11 +863,10 @@ function paintOnline(id,name,xy,r,g,b){ //paint another canvas
 	}
 }
 
-function paint(x,y,r,g,b){ //function that paints my own canvas :) 
+function paint(x,y){ //function that paints my own canvas :) 
 
 	var xx = Math.trunc((x - image.offx) / SCALE);
 	var yy = Math.trunc((y - image.offy) / SCALE);
-
 
 	if(xx >= 0 && xx < image.size && yy >= 0 && yy < image.size){
 
@@ -1073,14 +874,13 @@ function paint(x,y,r,g,b){ //function that paints my own canvas :)
 
 			var color = image.getPixel(x,y);
 
-			if(r != color.r || g != color.g || b != color.b){
+			if(R != color.r || G != color.g || B != color.b){
 
-				image.paint(xx,yy,r,g,b);
-				image.socket_paint(xx,yy,r,g,b);
+				image.paint(xx,yy,R,G,B);
+				image.socket_paint(xx,yy,R,G,B);
 
 				oldx = xx;
 				oldy = yy;
-		
 			}
 		}
 	}
@@ -1105,90 +905,15 @@ function mouseInput(){
 
 		color_picker.show(false);
 
-		if(btn_pencil.switched){
+		var rad = slider.f * 10;
 
-			paint(mx,my,R,G,B);
+		if(rad < 1){rad = 1;}
 
-		}else if(btn_brush.switched){
+		for(var x = -rad;x < rad;x++){
+			for(var y = -rad;y < rad;y++){
 
-			var rad = slider.f * 10;
-
-			if(rad < 1){rad = 1;}
-
-			for(var x = -rad;x < rad;x++){
-				for(var y = -rad;y < rad;y++){
-
-					if(x * x + y * y < rad * rad){
-						paint(mx + x * SCALE,my + y * SCALE,R,G,B);
-					}
-				}
-			}
-
-		}else if(btn_fill.switched){
-
-			var oldp = image.getPixel(mx,my);
-			paint(mx,my,R,G,B);
-			var p = image.getPixel(mx,my);
-
-			for(var i = 0;i < 50;i++){
-
-				for(var x = 0;x < image.size;x++){
-					for(var y = 0;y < image.size;y++){
-
-						var pp = image.getPixelAt(x,y);
-
-						if(pp.r == p.r && pp.g == p.g && pp.b == p.b){
-
-							p_up = image.getPixelAt(x,y-1);
-							p_down = image.getPixelAt(x,y+1);
-							p_right = image.getPixelAt(x+1,y);
-							p_left = image.getPixelAt(x-1,y);
-
-							if(p_up != undefined){
-								if(p_up.r == oldp.r && p_up.g == oldp.g && p_up.b == oldp.b){
-									image.paint(x,y-1,p.r,p.g,p.b);
-									image.socket_paint(x,y-1,p.r,p.g,p.b);
-								}
-							}
-
-							if(p_down != undefined){
-								if(p_down.r == oldp.r && p_down.g == oldp.g && p_down.b == oldp.b){
-									image.paint(x,y+1,p.r,p.g,p.b);
-									image.socket_paint(x,y+1,p.r,p.g,p.b);
-								}
-							}
-
-							if(p_right != undefined){
-								if(p_right.r == oldp.r && p_right.g == oldp.g && p_right.b == oldp.b){
-									image.paint(x+1,y,p.r,p.g,p.b);
-									image.socket_paint(x+1,y,p.r,p.g,p.b);
-								}
-							}
-
-							if(p_left != undefined){
-								if(p_left.r == oldp.r && p_left.g == oldp.g && p_left.b == oldp.b){
-									image.paint(x-1,y,p.r,p.g,p.b);
-									image.socket_paint(x,y-1,p.r,p.g,p.b);
-								}
-							}
-						}
-					}
-				}
-
-			}
-
-		}else if(btn_erase.switched){
-
-			var rad = slider.f * 10;
-
-			if(rad < 1){rad = 1;}
-
-			for(var x = -rad;x < rad;x++){
-				for(var y = -rad;y < rad;y++){
-
-					if(x * x + y * y < rad * rad){
-						paint(mx + x * SCALE,my + y * SCALE,255,255,255);
-					}
+				if(x * x + y * y < rad * rad){
+					paint(mx + x * SCALE,my + y * SCALE);
 				}
 			}
 		}
@@ -1209,22 +934,6 @@ app.stage.on('pointermove',function(e){
 	my = e.data.getLocalPosition(app.stage).y;
 
 	if(SCREEN == 1){
-
-		if(btn_brush.switched || btn_erase.switched){
-
-			if(mx > image.offx && mx < image.offx + image.size * SCALE && my > image.offy && my < image.offy + image.size * SCALE){
-				
-				color_radius.show(true);
-				color_radius.setPos(mx,my);
-				color_radius.setSize(slider.f * 110);
-
-			}else {
-				color_radius.show(false);
-			}
-
-		}else {
-			color_radius.show(false);
-		}
 
 		if(click){
 			mouseInput();
@@ -1290,21 +999,7 @@ app.stage.on('pointerdown',function(e){
 	for(var i = 0;i < buttons.length;i++){
 
 		if(mx > buttons[i].x && mx < buttons[i].x + buttons[i].w && my > buttons[i].y && my < buttons[i].y + buttons[i].h){
-			
 			buttons[i].click = true;
-
-			if(buttons[i].canswitch){
-
-				buttons[i].switched = true;
-
-				for(var j = 0;j < buttons.length;j++){
-
-					if(buttons[i] != buttons[j]){
-						buttons[j].switched = false;
-					}	
-				}
-			}
-
 		}else{
 			buttons[i].click = false;
 			buttons[i].selected = false;

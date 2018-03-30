@@ -19,7 +19,7 @@ var word = "none_";
 
 var winner;
 
-var voted = false;
+var voted = false; 
 
 var mx = -99;
 var my = -99;
@@ -304,6 +304,8 @@ var Image = function(size,offx,offy,scale,pix){
 
 	this.id = -9;
 	this.name = "?";
+
+	this.count = 0;
 
 	if(pix == null){
 
@@ -1018,7 +1020,7 @@ function gameLoop(delta){
 		}
 	}
 }
-
+var count=0;
 function paintOnline(id,name,xy,r,g,b){ //paint another canvas
 
 	if(SCREEN == 1){
@@ -1148,6 +1150,7 @@ function mouseInput(){
 								if(p_up.r == oldp.r && p_up.g == oldp.g && p_up.b == oldp.b){
 									image.paint(x,y-1,p.r,p.g,p.b);
 									image.socket_paint(x,y-1,p.r,p.g,p.b);
+									console.log("Y-1");
 								}
 							}
 
@@ -1155,6 +1158,7 @@ function mouseInput(){
 								if(p_down.r == oldp.r && p_down.g == oldp.g && p_down.b == oldp.b){
 									image.paint(x,y+1,p.r,p.g,p.b);
 									image.socket_paint(x,y+1,p.r,p.g,p.b);
+									console.log("Y+1");
 								}
 							}
 
@@ -1162,14 +1166,15 @@ function mouseInput(){
 								if(p_right.r == oldp.r && p_right.g == oldp.g && p_right.b == oldp.b){
 									image.paint(x+1,y,p.r,p.g,p.b);
 									image.socket_paint(x+1,y,p.r,p.g,p.b);
+									console.log("X+1");
 								}
 							}
 
 							if(p_left != undefined){
 								if(p_left.r == oldp.r && p_left.g == oldp.g && p_left.b == oldp.b){
 									image.paint(x-1,y,p.r,p.g,p.b);
-									image.socket_paint(x,y-1,p.r,p.g,p.b);
-								}
+									image.socket_paint(x-1,y,p.r,p.g,p.b);
+									console.log("x-1");								}
 							}
 						}
 					}

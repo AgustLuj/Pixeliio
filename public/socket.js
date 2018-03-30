@@ -1,7 +1,8 @@
-var socket = io.connect({ forceNew: true });
+var socket = io('localhost');
 socket.on('recharge', function() {
     location.reload();
 });
+var count=0;
 function socket_paint(id, xy, r, g, b) {
     socket.emit('paint', id, xy, r, g, b,room);
 }

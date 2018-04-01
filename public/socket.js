@@ -1,4 +1,4 @@
-var socket = io('localhost');
+var socket = io({'forceNew':true});
 socket.on('recharge', function() {
     location.reload();
 });

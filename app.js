@@ -46,7 +46,7 @@ io.on('connection', function(socket) {
             
             io.sockets.in(rooms[i].name).emit('SPaint', id, rooms[i].players[j].name, xy, r, g, b);
             count++;
-            console.log(count);
+            console.log(count,socket.id,xy);
         });
     });
     socket.on('vote', function(data,data2) {

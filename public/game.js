@@ -1132,7 +1132,7 @@ function mouseInput(){
 			paint(mx,my,R,G,B);
 			var p = image.getPixel(mx,my);
 
-			for(var i = 0;i < 50;i++){
+			for(var i = 0;i < 30;i++){
 
 				for(var x = 0;x < image.size;x++){
 					for(var y = 0;y < image.size;y++){
@@ -1147,34 +1147,35 @@ function mouseInput(){
 							p_left = image.getPixelAt(x-1,y);
 
 							if(p_up != undefined){
-								if(p_up.r == oldp.r && p_up.g == oldp.g && p_up.b == oldp.b){
+								if(p_up.r == oldp.r && p_up.g == oldp.g && p_up.b == oldp.b && (p_up.r != p.r || p_up.g != p.g || p_up.b != p.b)){
 									image.paint(x,y-1,p.r,p.g,p.b);
 									image.socket_paint(x,y-1,p.r,p.g,p.b);
-									console.log("Y-1");
+									console.log("si");
 								}
 							}
 
 							if(p_down != undefined){
-								if(p_down.r == oldp.r && p_down.g == oldp.g && p_down.b == oldp.b){
+								if(p_down.r == oldp.r && p_down.g == oldp.g && p_down.b == oldp.b && (p_down.r != p.r || p_down.g != p.g || p_down.b != p.b)){
 									image.paint(x,y+1,p.r,p.g,p.b);
 									image.socket_paint(x,y+1,p.r,p.g,p.b);
-									console.log("Y+1");
+									console.log("si");
 								}
 							}
 
 							if(p_right != undefined){
-								if(p_right.r == oldp.r && p_right.g == oldp.g && p_right.b == oldp.b){
+								if(p_right.r == oldp.r && p_right.g == oldp.g && p_right.b == oldp.b && (p_right.r != p.r || p_right.g != p.g || p_right.b != p.b)){
 									image.paint(x+1,y,p.r,p.g,p.b);
 									image.socket_paint(x+1,y,p.r,p.g,p.b);
-									console.log("X+1");
+									console.log("si");
 								}
 							}
 
 							if(p_left != undefined){
-								if(p_left.r == oldp.r && p_left.g == oldp.g && p_left.b == oldp.b){
+								if(p_left.r == oldp.r && p_left.g == oldp.g && p_left.b == oldp.b && (p_left.r != p.r || p_left.g != p.g || p_left.b != p.b)){
 									image.paint(x-1,y,p.r,p.g,p.b);
-									image.socket_paint(x-1,y,p.r,p.g,p.b);
-									console.log("x-1");								}
+									image.socket_paint(x-1,y,p.r,p.g,p.b);	
+									console.log("si");					
+								}
 							}
 						}
 					}

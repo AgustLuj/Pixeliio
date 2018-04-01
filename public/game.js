@@ -46,6 +46,12 @@ var greensea = "0x11856e";
 var tex_back = PIXI.Texture.fromImage("res/point.png");
 var tex_palette = PIXI.Texture.fromImage("res/palette.png");
 
+var tex_pencil = PIXI.Texture.fromImage("res/lapiz.png");
+var tex_brush = PIXI.Texture.fromImage("res/pincel.png");
+var tex_fill = PIXI.Texture.fromImage("res/balde.png");
+var tex_erase = PIXI.Texture.fromImage("res/goma.png");
+
+
 var back = new PIXI.Sprite(tex_back);
 back.width = 1000;
 back.height = 700;
@@ -232,7 +238,7 @@ var Button = function(x,y,w,str,size,color){
 	}
 }
 
-var ImageButton = function(x,y,w,h,color){
+var ImageButton = function(x,y,w,h,color,texture){
 
 	this.w = w;
 	this.h = h;
@@ -260,7 +266,16 @@ var ImageButton = function(x,y,w,h,color){
 	this.graphics.tint = turquoise;
 	this.graphics.endFill();
 
+	this.sprite = new PIXI.Sprite(texture);
+
+	this.sprite.width = this.w - 10;
+	this.sprite.height = this.h - 10;
+
+	this.sprite.x = this.x + 5;
+	this.sprite.y = this.y + 5;
+
 	app.stage.addChild(this.graphics);
+	app.stage.addChild(this.sprite);
 
 	this.tick = function(){
 
@@ -729,10 +744,10 @@ function setScreen(S){
 
 		buttons.push(slider);
 
-		btn_pencil = new ImageButton(322,565,50,50,turquoise);
-		btn_brush = new ImageButton(378,565,50,50,turquoise);
-		btn_fill = new ImageButton(434,565,50,50,turquoise);
-		btn_erase = new ImageButton(490,565,50,50,turquoise);
+		btn_pencil = new ImageButton(322,565,50,50,turquoise,tex_pencil);
+		btn_brush = new ImageButton(378,565,50,50,turquoise,tex_brush);
+		btn_fill = new ImageButton(434,565,50,50,turquoise,tex_fill);
+		btn_erase = new ImageButton(490,565,50,50,turquoise,tex_erase);
 
 		btn_pencil.canswitch = true;
 		btn_brush.canswitch = true;
@@ -1132,7 +1147,7 @@ function mouseInput(){
 			paint(mx,my,R,G,B);
 			var p = image.getPixel(mx,my);
 
-			for(var i = 0;i < 30;i++){
+			for(var i = 0;i < 70;i++){
 
 				for(var x = 0;x < image.size;x++){
 					for(var y = 0;y < image.size;y++){
@@ -1150,7 +1165,6 @@ function mouseInput(){
 								if(p_up.r == oldp.r && p_up.g == oldp.g && p_up.b == oldp.b && (p_up.r != p.r || p_up.g != p.g || p_up.b != p.b)){
 									image.paint(x,y-1,p.r,p.g,p.b);
 									image.socket_paint(x,y-1,p.r,p.g,p.b);
-									console.log("si");
 								}
 							}
 
@@ -1158,7 +1172,6 @@ function mouseInput(){
 								if(p_down.r == oldp.r && p_down.g == oldp.g && p_down.b == oldp.b && (p_down.r != p.r || p_down.g != p.g || p_down.b != p.b)){
 									image.paint(x,y+1,p.r,p.g,p.b);
 									image.socket_paint(x,y+1,p.r,p.g,p.b);
-									console.log("si");
 								}
 							}
 
@@ -1166,15 +1179,13 @@ function mouseInput(){
 								if(p_right.r == oldp.r && p_right.g == oldp.g && p_right.b == oldp.b && (p_right.r != p.r || p_right.g != p.g || p_right.b != p.b)){
 									image.paint(x+1,y,p.r,p.g,p.b);
 									image.socket_paint(x+1,y,p.r,p.g,p.b);
-									console.log("si");
 								}
 							}
 
 							if(p_left != undefined){
 								if(p_left.r == oldp.r && p_left.g == oldp.g && p_left.b == oldp.b && (p_left.r != p.r || p_left.g != p.g || p_left.b != p.b)){
 									image.paint(x-1,y,p.r,p.g,p.b);
-									image.socket_paint(x-1,y,p.r,p.g,p.b);	
-									console.log("si");					
+									image.socket_paint(x-1,y,p.r,p.g,p.b);					
 								}
 							}
 						}

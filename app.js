@@ -37,7 +37,6 @@ io.on('connection', function(socket) {
         }
         fn();
     });
-    var count = 0;
     socket.on('paint', function(id, xy, r, g, b,data2) {
        infoPlayer(id,data2, function(i, j) {
             rooms[i].players[j].image[0].pixels[xy].r = r;
@@ -45,8 +44,6 @@ io.on('connection', function(socket) {
             rooms[i].players[j].image[0].pixels[xy].b = b;
             
             io.sockets.in(rooms[i].name).emit('SPaint', id, rooms[i].players[j].name, xy, r, g, b);
-            count++;
-            console.log(count,socket.id,xy);
         });
     });
     socket.on('vote', function(data,data2) {

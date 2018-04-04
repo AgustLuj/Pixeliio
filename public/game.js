@@ -902,6 +902,10 @@ function reset(){
 
 	for(var i = 0;i < images.length;i++){
 		images[i].id =-9
+		images[i].pixels=[];
+		for(var i = 0;i < images[i].size * images[i].size;i++){
+			images[i].pixels.push({'r' : 255,'g' : 255,'b' : 255});
+		}
 	}
 
 	voted = false;

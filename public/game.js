@@ -719,7 +719,7 @@ function setScreen(S){
 		buttons.push(inputbox);
 
 	}else if(S == 1){
-
+		images=[];
 		palette = new Palette(1000 - 32 * SCALE - 292,700 - 32 * SCALE - 20);
 		drawPalette();
 
@@ -823,6 +823,7 @@ function setScreen(S){
 
 	}else if(S == 5){
 
+
 		button_search = new Button("CENTER",300,300,"Buscar Partida",22,turquoise);
 		buttons.push(button_search);
 
@@ -900,13 +901,6 @@ function reset(){
 	room = "none";
 	word = "none_";
 
-	for(var i = 0;i < images.length;i++){
-		images[i].id =-9
-		images[i].pixels=[];
-		for(var i = 0;i < images[i].size * images[i].size;i++){
-			images[i].pixels.push({'r' : 255,'g' : 255,'b' : 255});
-		}
-	}
 
 	voted = false;
 }

@@ -60,6 +60,7 @@ io.on('connection', function(socket) {
                     }
                 }
                 io.sockets.in(rooms[q].name).emit('info',{'type':3,'players':rooms[q].players,'win':max});
+                rooms[q].finish= true;
                /* for (var i = 0; i < words.length; i++) {
                     if(room[q].words == words[i].name){
                         for (var j = 0; j < rooms[q].players.length; j++) {
@@ -104,7 +105,7 @@ server.listen(app.get('port'), function() {
 function infoPlayer(id,data2, fn) {
     for (var i = 0; i < rooms.length; i++) {
         for (var j = 0; j < rooms[i].players.length; j++) {
-            if (rooms[i].players[j].id == id && rooms[i].name == data2) {
+            if (rooms[i].players[j].id == id && rooms[i].name == data2 && !rooms[i].finish) {
                 fn(i, j);
                 break;
             }
@@ -138,7 +139,8 @@ function createRoom(fn) {
         'timeSec': 60,
         'words': words[0].name,
         'play': false,
-        'votes': 0
+        'votes': 0,
+        'finish':false
     });
     for (var i = 0; i < wait_list.length; i++) {
         rooms[numbRoom2].players.push({

@@ -900,6 +900,10 @@ function reset(){
 	room = "none";
 	word = "none_";
 
+	for(var i = 0;i < images.length;i++){
+		images[i].id =-9
+	}
+
 	voted = false;
 }
 

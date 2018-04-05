@@ -135,8 +135,8 @@ function createRoom(fn) {
     rooms.push({
         'name': name,
         'players': [],
-        'timeMin': 0,
-        'timeSec': 20,
+        'timeMin': 2,
+        'timeSec': 60,
         'words': words[0].name,
         'play': false,
         'votes': 0,

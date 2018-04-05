@@ -9,6 +9,8 @@ app.ticker.add(delta => gameLoop(delta));
 var ID = -999;
 var USERNAME = "anonimo";
 
+var USERS = 0;
+
 var SCREEN = 0; //0 = menu,1 = game,2 = wait,3 = finish,4 = winner
 
 var WIDTH = 1000;
@@ -719,15 +721,23 @@ function setScreen(S){
 		buttons.push(inputbox);
 
 	}else if(S == 1){
+
 		images=[];
+		
 		palette = new Palette(1000 - 32 * SCALE - 292,700 - 32 * SCALE - 20);
 		drawPalette();
 
 		image = new Image(32,1000 - 32 * SCALE - 20,700 - 32 * SCALE - 20,SCALE);
 
-		for(var x = 0;x < 3;x++){
-			for(var y = 0;y < 6;y++){
-				images.push(new Image(32,8 + x * 100,8 + y * 100,3));
+		var c = 0;
+
+		for(var y = 0;y < 6;y++){
+			for(var x = 0;x < 3;x++){
+				
+				if(c < USERS - 1){
+					images.push(new Image(32,8 + x * 100,8 + y * 100,3));
+					c++;
+				}
 			}
 		}
 
@@ -851,7 +861,9 @@ function info(data){
 		}
 
 		if(data.users != undefined){
+
 			text_users.setText("usuarios online : "+data.users);
+			USERS = data.users;
 		}
 
 		clock2.setText("00:"+t);

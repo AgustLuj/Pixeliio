@@ -19,6 +19,7 @@ var wait_list = [];
 var timers = 10;
 var info;
 var jugadores = 18;
+
 /*************************************************/
 io.on('connection', function(socket) {
     if (soc) {

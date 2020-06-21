@@ -1,7 +1,7 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 const fs = require('fs');
 app.use(express.static('public'));
 app.set('port', (process.env.PORT || 80));
@@ -14,7 +14,7 @@ var numb = 0;
 var words = [{'name':"rueda",'images':[]}];
 var rooms = [];
 var numbRoom = 0;
-var size = 32
+const size = 32
 var wait_list = [];
 var timers = 10;
 var info;

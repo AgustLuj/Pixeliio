@@ -3,6 +3,8 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
+const infoPlayer = require('./modules/infoplayers.js');
+const createRoom = require('./modules/Room.js');
 app.use(express.static('public'));
 app.set('port', (process.env.PORT || 80));
 /*************************************************/
@@ -39,7 +41,7 @@ io.on('connection', function(socket) {
         fn();
     });
     socket.on('paint', function(id, xy, r, g, b,data2) {
-       infoPlayer(id,data2, function(i, j) {
+       infoPlayer(id,data2,rooms, function(i, j) {
             rooms[i].players[j].image[0].pixels[xy].r = r;
             rooms[i].players[j].image[0].pixels[xy].g = g;
             rooms[i].players[j].image[0].pixels[xy].b = b;
@@ -48,7 +50,7 @@ io.on('connection', function(socket) {
         });
     });
     socket.on('vote', function(data,data2) {
-        infoPlayer(data,data2, function(q, g) {
+        infoPlayer(data,data2,rooms, function(q, g) {
             rooms[q].players[g].votes++;
             rooms[q].votes++;
             if (rooms[q].votes == rooms[q].players.length) {
@@ -76,7 +78,7 @@ io.on('connection', function(socket) {
         });
     });
     socket.on('finishe',function(data) {
-        infoPlayer(socket.id,function (i,j) {
+        infoPlayer(socket.id,data,rooms, function (i,j) {
             socket.leave(rooms[i].name);
             //io.sockets.in(rooms[i].name).emit('i',rooms[i].players);
         })
@@ -102,19 +104,7 @@ io.on('connection', function(socket) {
 server.listen(app.get('port'), function() {
     console.log('Node app is running on port', app.get('port'), cad);
 });
-
-function infoPlayer(id,data2, fn) {
-    for (var i = 0; i < rooms.length; i++) {
-        for (var j = 0; j < rooms[i].players.length; j++) {
-            if (rooms[i].players[j].id == id && rooms[i].name == data2 && !rooms[i].finish) {
-                fn(i, j);
-                break;
-            }
-        }
-    }
-}
-
-function join() {
+/*function join() {
 
     if (wait_list.length < jugadores - 1) {
         createRoom(function(data, words, data2) {
@@ -128,52 +118,14 @@ function join() {
         timers = 59
     }
 }
-
-function createRoom(fn) {
-    let name = 'room-' + numbRoom;// numbRoom es el numero inicial de las room
-    let numbRoom2 = numbRoom;
-    numbRoom++;
-    rooms.push({// incerto el nuevo romm en la variable general
-        'name': name,
-        'players': [],
-        'timeMin': 2,
-        'timeSec': 60,
-        'words': words[0].name,
-        'play': false,
-        'votes': 0,
-        'finish':false
-    });
-    for (let i = 0; i < wait_list.length; i++) {
-        rooms[numbRoom2].players.push({
-            'id': wait_list[i].id,
-            'name': wait_list[i].name,
-            'image': [{
-                'size': size,
-                'pixels': [],
-                'votes':0,
-                'name':wait_list[i].name,
-            }],
-            'votes': 0
-        });
-
-        for (let q = 0; q < rooms[numbRoom2].players.length; q++) {
-            if (rooms[numbRoom2].players[q].id == wait_list[i].id) {
-                for (let j = 0; j < size * size; j++) {
-                    rooms[numbRoom2].players[q].image[0].pixels.push({ 'r': 255, 'g': 255, 'b': 255 });
-                }
-            }
-        }
-    }
-    fn(name, rooms[numbRoom2].words, numbRoom2);
-}
-
+*/
 function info() {
     for (let i = 0; i < wait_list.length; i++) {
         io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
     }
     if (timers <= 0) {
         if (wait_list.length > 1) {
-            createRoom(function(data, words, data2) {
+            createRoom(numbRoom,words,rooms,size,wait_list,function(data, words, data2) {
                 for (var i = 0; i < wait_list.length; i++) {
                     io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
                 }
@@ -237,7 +189,8 @@ var juego = (function() {
     function dibujar() {
         for (var i = 0; i < rooms.length; i++) {
             for (var j = 0; j < rooms[i].players.length; j++) {
-                io.to(rooms[i].players[j].id).emit('timer', rooms[i].timeMin, rooms[i].timeSec);
+                const {timeMin,timeSec} = rooms[i]
+                io.to(rooms[i].players[j].id).emit('timer', timeMin,timeSec);
             }
         }
     }

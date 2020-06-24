@@ -24,6 +24,7 @@ var jugadores = 18;
 
 /*************************************************/
 io.on('connection', function(socket) {
+    
     if (soc) {
 
         socket.emit('recharge');
@@ -41,16 +42,20 @@ io.on('connection', function(socket) {
         fn();
     });
     socket.on('paint', function(id, xy, r, g, b,data2) {
-       infoPlayer(id,data2,rooms, function(i, j) {
-            rooms[i].players[j].image[0].pixels[xy].r = r;
-            rooms[i].players[j].image[0].pixels[xy].g = g;
-            rooms[i].players[j].image[0].pixels[xy].b = b;
-            
-            io.sockets.in(rooms[i].name).emit('SPaint', id, rooms[i].players[j].name, xy, r, g, b);
-        });
+        if(socket.i == null || socket.j ==  null){
+            infoPlayer({id,data2,rooms}, function(i, j) {
+                socket.i = i;
+                socket.j= j;
+            })
+        }
+            rooms[socket.i].players[socket.j].image[0].pixels[xy].r = r;
+            rooms[socket.i].players[socket.j].image[0].pixels[xy].g = g;
+            rooms[socket.i].players[socket.j].image[0].pixels[xy].b = b;
+            io.sockets.in(rooms[socket.i].name).emit('SPaint', id, rooms[socket.i].players[socket.j].name, xy, r, g, b);
     });
-    socket.on('vote', function(data,data2) {
-        infoPlayer(data,data2,rooms, function(q, g) {
+    socket.on('vote', function() {
+            let q = socket.i;
+            let g = socket.j;
             rooms[q].players[g].votes++;
             rooms[q].votes++;
             if (rooms[q].votes == rooms[q].players.length) {
@@ -75,14 +80,11 @@ io.on('connection', function(socket) {
                 }*/
                 
             }
-        });
     });
-    socket.on('finishe',function(data) {
-        infoPlayer(socket.id,data,rooms, function (i,j) {
-            socket.leave(rooms[i].name);
+    socket.on('finishe',function() {
+            socket.leave(rooms[socket.i].name);
             //io.sockets.in(rooms[i].name).emit('i',rooms[i].players);
-        })
-    })
+    });
     socket.on('disconnect', function() {
         for (var i = 0; i < wait_list.length; i++) {
             if (wait_list[i].id == socket.id) {
@@ -128,6 +130,7 @@ function info() {
             createRoom(numbRoom,words,rooms,size,wait_list,function(data, words, data2) {
                 for (var i = 0; i < wait_list.length; i++) {
                     io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
+                    io.sockets
                 }
                 rooms[data2].play = true;
             });

@@ -4,7 +4,8 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
 const infoPlayer = require('./modules/infoplayers.js');
-const createRoom = require('./modules/Room.js');
+const {rooms,Room,Changergb,vote} = require('./modules/Room.js');
+const juego = require('./modules/game.js');
 app.use(express.static('public'));
 app.set('port', (process.env.PORT || 80));
 /*************************************************/
@@ -14,14 +15,12 @@ cad = f.getHours() + ":" + f.getMinutes() + ":" + f.getSeconds();
 var soc = true;
 var numb = 0;
 var words = [{'name':"rueda",'images':[]}];
-var rooms = [];
 var numbRoom = 0;
 const size = 32
 var wait_list = [];
 var timers = 10;
 var info;
 var jugadores = 18;
-
 /*************************************************/
 io.on('connection', function(socket) {
     
@@ -43,44 +42,25 @@ io.on('connection', function(socket) {
     });
     socket.on('paint', function(id, xy, r, g, b,data2) {
         if(socket.i == null || socket.j ==  null){
-            infoPlayer({id,data2,rooms}, function(i, j) {
+            infoPlayer({id,data2}, function(i, j) {
                 socket.i = i;
                 socket.j= j;
             })
         }
-            rooms[socket.i].players[socket.j].image[0].pixels[xy].r = r;
-            rooms[socket.i].players[socket.j].image[0].pixels[xy].g = g;
-            rooms[socket.i].players[socket.j].image[0].pixels[xy].b = b;
+            Changergb(socket.i,socket.j,xy,{r,g,b});
             io.sockets.in(rooms[socket.i].name).emit('SPaint', id, rooms[socket.i].players[socket.j].name, xy, r, g, b);
     });
     socket.on('vote', function() {
-            rooms[socket.i].players[socket.j].votes++;
-            rooms[socket.i].votes++;
-            if (rooms[socket.i].votes == rooms[socket.i].players.length) {
-                var max;
-                for (var i = 0; i < rooms.length; i++) {
-                    for (var j = 0; j < rooms[i].players.length; j++) {
-                        if(max == undefined || rooms[i].players[j].votes > max.votes){
-                            max = rooms[i].players[j];
-                        }
-                    }
-                }
+        vote(socket.i,socket.j,(done,max={})=>{
+            if(done){
                 io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].players,'win':max});
-                rooms[socket.i].finish= true;
-               /* for (var i = 0; i < words.length; i++) {
-                    if(room[q].words == words[i].name){
-                        for (var j = 0; j < rooms[q].players.length; j++) {
-                            if(rooms[q].players[j].votes > 0){
-                                words[i].images.push(rooms[q].players[j].image);
-                            }
-                        }
-                    }
-                }*/
-                
             }
+        })  
     });
     socket.on('finishe',function() {
-            socket.leave(rooms[socket.i].name);
+            try{
+                socket.leave(rooms[socket.i].name);
+            }catch{}
             //io.sockets.in(rooms[i].name).emit('i',rooms[i].players);
     });
     socket.on('disconnect', function() {
@@ -101,7 +81,7 @@ server.listen(app.get('port'), function() {
 /*function join() {
 
     if (wait_list.length < jugadores - 1) {
-        createRoom(function(data, words, data2) {
+        Room(function(data, words, data2) {
             for (var i = 0; i < wait_list.length; i++) {
                 io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name);
             }
@@ -119,7 +99,7 @@ function info() {
     }
     if (timers <= 0) {
         if (wait_list.length > 1) {
-            createRoom(numbRoom,words,rooms,size,wait_list,function(data, words, data2) {
+            Room(numbRoom,words,size,wait_list,function(data, words, data2) {
                 for (var i = 0; i < wait_list.length; i++) 
                     io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
 
@@ -153,57 +133,4 @@ function save(room) {
         console.log("The file was saved!");
     });
 }
-var juego = (function() {
-    var timer,
-        velocidad = 1000;
-
-    function actualizar() {
-        for (var i = 0; i < rooms.length; i++) {
-            if (rooms[i].play) {
-                if (rooms[i].players.length > 0) {
-                    if (rooms[i].timeMin > 0 || rooms[i].timeSec > 0) {
-                        if (rooms[i].timeSec > 0) {
-                            rooms[i].timeSec--;
-                        } else {
-                            rooms[i].timeMin--;
-                            rooms[i].timeSec = 59;
-                        }
-                    } else if (rooms[i].play) {
-                        rooms[i].play = false;
-                        //save(rooms[i]);
-                        io.sockets.in(rooms[i].name).emit('info',{'type':2});
-                        //rooms.splice(i, 0);
-                        //i -= 1;
-                    }
-                }
-            }
-        }
-    }
-
-    function dibujar() {
-        for (var i = 0; i < rooms.length; i++) {
-            for (var j = 0; j < rooms[i].players.length; j++) {
-                const {timeMin,timeSec} = rooms[i]
-                io.to(rooms[i].players[j].id).emit('timer', timeMin,timeSec);
-            }
-        }
-    }
-
-    function loop() {
-        actualizar();
-        dibujar();
-        timer = setTimeout(loop, velocidad);
-    }
-
-    return {
-        iniciar: function() {
-            loop();
-        },
-        detener: function() {
-            clearTimeout(timer);
-        }
-    }
-
-})();
-
-juego.iniciar();
+juego.iniciar(io);// incio el juego

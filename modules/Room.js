@@ -1,4 +1,5 @@
-const Room = (numbRoom,words,rooms,size,wait_list,fn) => {
+const rooms = [];
+const Room = (numbRoom,words,size,wait_list,fn) => {
     let name = 'room-' + numbRoom;// numbRoom es el numero inicial de las room
     let numbRoom2 = numbRoom;
     numbRoom++;
@@ -6,7 +7,7 @@ const Room = (numbRoom,words,rooms,size,wait_list,fn) => {
         'name': name,
         'players': [],
         'timeMin': 0,
-        'timeSec': 40,
+        'timeSec': 20,
         'words': words[0].name,
         'play': false,
         'votes': 0,
@@ -35,4 +36,43 @@ const Room = (numbRoom,words,rooms,size,wait_list,fn) => {
     }
     fn(name, rooms[numbRoom2].words, numbRoom2);
 }
-module.exports = Room; 
+
+const Changergb = (i,j,xy,{r,g,b})=>{
+    rooms[i].players[j].image[0].pixels[xy].r = r;
+    rooms[i].players[j].image[0].pixels[xy].g = g;
+    rooms[i].players[j].image[0].pixels[xy].b = b;
+}
+const getRooms = ()=> console.log(`b:${rooms[i].players[j].image[0].pixels[xy].r}`);
+const vote = (i,j,fn)=>{
+    rooms[i].players[j].votes++;
+    rooms[i].votes++;
+    if (rooms[i].votes == rooms[i].players.length) {
+        var max;
+        for (let i = 0; i < rooms.length; i++) {
+            for (let j = 0; j < rooms[i].players.length; j++) {
+                if(max == undefined || rooms[i].players[j].votes > max.votes){
+                    max = rooms[i].players[j];
+                }
+            }
+        }
+        fn(true,max)
+        rooms[i].finish= true;
+       /* for (var i = 0; i < words.length; i++) {
+            if(room[q].words == words[i].name){
+                for (var j = 0; j < rooms[q].players.length; j++) {
+                    if(rooms[q].players[j].votes > 0){
+                        words[i].images.push(rooms[q].players[j].image);
+                    }
+                }
+            }
+        }*/
+        
+    }
+}
+module.exports = {
+    rooms,
+    Room,
+    Changergb,
+    getRooms,
+    vote
+};

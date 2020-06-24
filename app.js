@@ -54,11 +54,9 @@ io.on('connection', function(socket) {
             io.sockets.in(rooms[socket.i].name).emit('SPaint', id, rooms[socket.i].players[socket.j].name, xy, r, g, b);
     });
     socket.on('vote', function() {
-            let q = socket.i;
-            let g = socket.j;
-            rooms[q].players[g].votes++;
-            rooms[q].votes++;
-            if (rooms[q].votes == rooms[q].players.length) {
+            rooms[socket.i].players[socket.j].votes++;
+            rooms[socket.i].votes++;
+            if (rooms[socket.i].votes == rooms[socket.i].players.length) {
                 var max;
                 for (var i = 0; i < rooms.length; i++) {
                     for (var j = 0; j < rooms[i].players.length; j++) {
@@ -67,8 +65,8 @@ io.on('connection', function(socket) {
                         }
                     }
                 }
-                io.sockets.in(rooms[q].name).emit('info',{'type':3,'players':rooms[q].players,'win':max});
-                rooms[q].finish= true;
+                io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].players,'win':max});
+                rooms[socket.i].finish= true;
                /* for (var i = 0; i < words.length; i++) {
                     if(room[q].words == words[i].name){
                         for (var j = 0; j < rooms[q].players.length; j++) {
@@ -88,17 +86,11 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         for (var i = 0; i < wait_list.length; i++) {
             if (wait_list[i].id == socket.id) {
-                if (wait_list.length == 1) {
-                    clearTimeout(time);
-                    timers = 59;
-
-                }
+                if (wait_list.length == 1) clearTimeout(time);  timers = 59;
                 wait_list.splice(i, 1);
             }
         }
-        for (var i = 0; i < wait_list.length; i++) {
-            io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
-        }
+        for (var i = 0; i < wait_list.length; i++) io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
     });
 });
 
@@ -128,10 +120,9 @@ function info() {
     if (timers <= 0) {
         if (wait_list.length > 1) {
             createRoom(numbRoom,words,rooms,size,wait_list,function(data, words, data2) {
-                for (var i = 0; i < wait_list.length; i++) {
+                for (var i = 0; i < wait_list.length; i++) 
                     io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
-                    io.sockets
-                }
+
                 rooms[data2].play = true;
             });
             wait_list = [];

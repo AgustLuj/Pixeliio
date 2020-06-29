@@ -27,7 +27,7 @@ socket.on('join',function(data,data2,name) {
 	    socket.emit('login',data,function() {
 	    	room = data;
 	    	setRoom({'name':data,'words':data2});
-        	setId(socket.id,name);
+			setId(socket.id,name);
 	    });
 });
 socket.on('info',function(data) {

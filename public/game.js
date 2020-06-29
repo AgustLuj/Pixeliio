@@ -985,9 +985,7 @@ function drawPalette(){
 }
 
 function setTime(m,s){
-
 	if(SCREEN == 1){
-
 		if(s < 10){s = "0" + s;}
 		clock.setText(m + ":" + s);
 	}

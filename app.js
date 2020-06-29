@@ -5,7 +5,7 @@ const io = require('socket.io')(server);
 const fs = require('fs');
 const infoPlayer = require('./modules/infoplayers.js');
 const {rooms,Room,Changergb,vote,numbRoom} = require('./modules/Room.js');
-const juego = require('./modules/game.js');
+const juego = require('./modules/Gloop.js');
 app.use(express.static('public'));
 app.set('port', (process.env.PORT || 80));
 /*************************************************/

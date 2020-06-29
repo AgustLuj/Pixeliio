@@ -1,4 +1,4 @@
-const {rooms} = require('./Room');
+/*const {rooms} = require('./Room');
 var io;
 var juego = (function() {
     var timer,
@@ -31,4 +31,4 @@ var juego = (function() {
     }
 
 })();
-module.exports= juego;
+module.exports= juego;*///Not Work 

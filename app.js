@@ -97,7 +97,7 @@ function info() {
         io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
     }
     if (timers <= 0) {
-        if (wait_list.length > 1) {
+        if (wait_list.length > 2) {
             Room(numbRoom,words,size,wait_list,io,function(data, words, data2) {
                 
                 for (var i = 0; i < wait_list.length; i++){

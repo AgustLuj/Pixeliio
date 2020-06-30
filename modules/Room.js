@@ -9,8 +9,8 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
     rooms.push({// incerto el nuevo romm en la variable general
         'name': name,
         'players': [],
-        'timeMin': 0,
-        'timeSec': 10,
+        'timeMin': 1,
+        'timeSec': 59,
         'words': words[0].name,
         'play': false,
         'votes': 0,

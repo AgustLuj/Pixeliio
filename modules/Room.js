@@ -22,7 +22,6 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
         
             function actualizar() {
                 let {play,players,timeMin,timeSec,name} = rooms[id];
-                console.log('hola')
                 if (play) {
                     if (players.length > 0) {
                         if (timeMin > 0 || timeSec > 0) {
@@ -73,27 +72,26 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
         
         })(),
     });
-    for (let i = 0; i < wait_list.length; i++) {
+    wait_list.forEach(({id,name}) => {
         rooms[numbRoom2].players.push({
-            'id': wait_list[i].id,
-            'name': wait_list[i].name,
+            'id': id,
+            'name': name,
             'image': [{
                 'size': size,
                 'pixels': [],
                 'votes':0,
-                'name':wait_list[i].name,
+                'name':name,
             }],
             'votes': 0
         });
-
-        for (let q = 0; q < rooms[numbRoom2].players.length; q++) {
-            if (rooms[numbRoom2].players[q].id == wait_list[i].id) {
+        rooms[numbRoom2].players.forEach((player)=>{
+            if (player.id == id) {
                 for (let j = 0; j < size * size; j++) {
-                    rooms[numbRoom2].players[q].image[0].pixels.push({ 'r': 255, 'g': 255, 'b': 255 });
+                    player.image[0].pixels.push({ 'r': 255, 'g': 255, 'b': 255 });
                 }
             }
-        }
-    }
+        })
+    });
     rooms[numbRoom2].Gloop.iniciar();
     fn(name, rooms[numbRoom2].words, numbRoom2);
 }
@@ -103,20 +101,30 @@ const Changergb = (i,j,xy,{r,g,b})=>{
     rooms[i].players[j].image[0].pixels[xy].g = g;
     rooms[i].players[j].image[0].pixels[xy].b = b;
 }
-const vote = (i,j,fn)=>{
-    rooms[i].players[j].votes++;
-    rooms[i].votes++;
-    if (rooms[i].votes == rooms[i].players.length) {
-        var max;
-        for (let i = 0; i < rooms.length; i++) {
-            for (let j = 0; j < rooms[i].players.length; j++) {
-                if(max == undefined || rooms[i].players[j].votes > max.votes){
-                    max = rooms[i].players[j];
-                }
+const vote = (data,fn)=>{
+    let Ri=null;
+    let Pj=null;
+    rooms.forEach(({players,votes},i)=>{
+        players.forEach(({id},j)=>{
+            if(data == id){
+                rooms[i].players[j].votes++;
+                rooms[i].votes++;
+                Ri=i;
+                Pj=j;
             }
-        }
+        })
+    })
+    if (rooms[Ri].votes == rooms[Ri].players.length) {
+        var max;
+        rooms.forEach(room=>{
+            room.players.forEach(player=>{
+                if(max == undefined || player.votes > max.votes){
+                    max = player;
+                }
+            })
+        })
         fn(true,max)
-        rooms[i].finish= true;
+        rooms[Ri].finish= true;
        /* for (var i = 0; i < words.length; i++) {
             if(room[q].words == words[i].name){
                 for (var j = 0; j < rooms[q].players.length; j++) {

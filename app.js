@@ -49,8 +49,8 @@ io.on('connection', function(socket) {
             Changergb(socket.i,socket.j,xy,{r,g,b});
             io.sockets.in(rooms[socket.i].name).emit('SPaint', id, rooms[socket.i].players[socket.j].name, xy, r, g, b);
     });
-    socket.on('vote', function() {
-        vote(socket.i,socket.j,(done,max={})=>{
+    socket.on('vote', function(data) {
+        vote(data,(done,max={})=>{
             if(done){
                 io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].players,'win':max});
             }
@@ -63,13 +63,15 @@ io.on('connection', function(socket) {
             //io.sockets.in(rooms[i].name).emit('i',rooms[i].players);
     });
     socket.on('disconnect', function() {
-        for (var i = 0; i < wait_list.length; i++) {
-            if (wait_list[i].id == socket.id) {
+        wait_list.forEach(({id},i)=>{
+            if (id == socket.id) {
                 if (wait_list.length == 1) clearTimeout(time);  timers = 59;
                 wait_list.splice(i, 1);
             }
-        }
-        for (var i = 0; i < wait_list.length; i++) io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
+        })
+        wait_list.forEach(({id}) =>{
+            io.to(id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
+        })
     });
 });
 
@@ -93,16 +95,22 @@ server.listen(app.get('port'), function() {
 }
 */
 function info() {
-    for (let i = 0; i < wait_list.length; i++) {
+    wait_list.forEach(({id}) =>{
+        io.to(id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
+    })
+    /*for (let i = 0; i < wait_list.length; i++) {
         io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
-    }
+    }*/
     if (timers <= 0) {
-        if (wait_list.length > 2) {
+        if (wait_list.length > 1) {
             Room(numbRoom,words,size,wait_list,io,function(data, words, data2) {
                 
-                for (var i = 0; i < wait_list.length; i++){
+                /*for (var i = 0; i < wait_list.length; i++){
                     io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name, wait_list.length - jugadores);
-                }
+                }*/
+                wait_list.forEach(({id,name})=>{
+                    io.to(id).emit('join', data, words,name, wait_list.length - jugadores);
+                })
                 rooms[data2].play = true;
             });
             wait_list = [];

@@ -104,7 +104,7 @@ const Changergb = (i,j,xy,{r,g,b})=>{
 const vote = (data,fn)=>{
     let Ri=null;
     let Pj=null;
-    rooms.forEach(({players,votes},i)=>{
+    rooms.forEach(({players},i)=>{
         players.forEach(({id},j)=>{
             if(data == id){
                 rooms[i].players[j].votes++;
@@ -133,8 +133,7 @@ const vote = (data,fn)=>{
                     }
                 }
             }
-        }*/
-        
+        }*/ 
     }
 }
 module.exports = {

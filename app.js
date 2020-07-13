@@ -79,28 +79,10 @@ io.on('connection', function(socket) {
 server.listen(app.get('port'), function() {
     console.log('Node app is running on port', app.get('port'), cad);
 });
-/*function join() {
-
-    if (wait_list.length < jugadores - 1) {
-        Room(function(data, words, data2) {
-            for (var i = 0; i < wait_list.length; i++) {
-                io.to(wait_list[i].id).emit('join', data, words, wait_list[i].name);
-            }
-            rooms[data2].play = true;
-        });
-        wait_list = [];
-        clearTimeout(time);
-        timers = 59
-    }
-}
-*/
 function info() {
     wait_list.forEach(({id}) =>{
         io.to(id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
     })
-    /*for (let i = 0; i < wait_list.length; i++) {
-        io.to(wait_list[i].id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
-    }*/
     if (timers <= 0) {
         if (wait_list.length > 1) {
             Room(numbRoom,words,size,wait_list,io,function(data, words, data2) {

@@ -1,11 +1,9 @@
 const rooms = [];
 var io;
-var numbRoom = 0;
 const Room = (numbRoom,words,size,wait_list,sock,fn) => {
     io=sock;
     let name = 'room-' + numbRoom;// numbRoom es el numero inicial de las room
     let numbRoom2 = numbRoom;
-    numbRoom++;
     rooms.push({// incerto el nuevo romm en la variable general
         'name': name,
         'players': [],
@@ -17,9 +15,9 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
         'finish':false,
         'Gloop':(() =>{
             let id = numbRoom2; 
-            var timer,
+            let timer,tim,
                 velocidad = 1000;
-        
+
             function actualizar() {
                 let {play,players,timeMin,timeSec,name} = rooms[id];
                 if (play) {
@@ -32,10 +30,10 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
                                 rooms[id].timeSec = 59;
                             }
                         } else if (play) {
-                            rooms[id].Gloop.detener();
                             play = false;
-                            //save(rooms[id]);
                             io.sockets.in(name).emit('info',{'type':2});
+                            rooms[id].Gloop.detener();
+                            //save(rooms[id]);
                             //rooms.splice(i, 0);
                             //i -= 1;
                         }
@@ -71,6 +69,45 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
             }
         
         })(),
+        'vote':(data,fn)=>{
+            let Rid = numbRoom2;
+            let Pj;
+            rooms[Rid].players.forEach(({id},j)=>{
+                    if(data == id){
+                        rooms[Rid].players[j].votes++;
+                        rooms[Rid].votes++;
+                        Pj=j;
+                    }
+            })
+            if(Pj != null){
+                if (rooms[Rid].votes == rooms[Rid].players.length) {
+                    var max;
+                        rooms[Rid].players.forEach(player=>{
+                            if(max == undefined || player.votes > max.votes){
+                                max = player;
+                            }
+                        })
+                    rooms[Rid].finish= true;
+                    fn(true,max)
+                /* for (var i = 0; i < words.length; i++) {
+                        if(room[q].words == words[i].name){
+                            for (var j = 0; j < rooms[q].players.length; j++) {
+                                if(rooms[q].players[j].votes > 0){
+                                    words[i].images.push(rooms[q].players[j].image);
+                                }
+                            }
+                        }
+                    }*/ 
+                }
+            }else{
+                fn(false);
+            }
+        },
+        'Changergb' : (i,j,xy,{r,g,b})=>{
+            rooms[i].players[j].image[0].pixels[xy].r = r;
+            rooms[i].players[j].image[0].pixels[xy].g = g;
+            rooms[i].players[j].image[0].pixels[xy].b = b;
+        }
     });
     wait_list.forEach(({id,name}) => {
         rooms[numbRoom2].players.push({
@@ -101,45 +138,7 @@ const Changergb = (i,j,xy,{r,g,b})=>{
     rooms[i].players[j].image[0].pixels[xy].g = g;
     rooms[i].players[j].image[0].pixels[xy].b = b;
 }
-const vote = (data,fn)=>{
-    let Ri=null;
-    let Pj=null;
-    rooms.forEach(({players},i)=>{
-        players.forEach(({id},j)=>{
-            if(data == id){
-                rooms[i].players[j].votes++;
-                rooms[i].votes++;
-                Ri=i;
-                Pj=j;
-            }
-        })
-    })
-    if (rooms[Ri].votes == rooms[Ri].players.length) {
-        var max;
-        rooms.forEach(room=>{
-            room.players.forEach(player=>{
-                if(max == undefined || player.votes > max.votes){
-                    max = player;
-                }
-            })
-        })
-        fn(true,max)
-        rooms[Ri].finish= true;
-       /* for (var i = 0; i < words.length; i++) {
-            if(room[q].words == words[i].name){
-                for (var j = 0; j < rooms[q].players.length; j++) {
-                    if(rooms[q].players[j].votes > 0){
-                        words[i].images.push(rooms[q].players[j].image);
-                    }
-                }
-            }
-        }*/ 
-    }
-}
 module.exports = {
     rooms,
     Room,
-    Changergb,
-    vote,
-    numbRoom,
 };

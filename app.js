@@ -24,11 +24,10 @@ var wait_list = [];
 var timers = 10;
 var info;
 var jugadores = 18;
-var keys = ['keyboard cat']
 /*************************************************/
 app.get('/',(req,res)=>{
-    var cookies = new Cookies(req, res, { keys: keys })
-    cookies.set('Pixeliio', new Date().toISOString(), { signed: true,sameSite:'none',secure:false })
+    //var cookies = new Cookies(req, res, { keys: keys })
+    //cookies.set('Pixeliio', new Date().toISOString(), { signed: true,sameSite:'none',secure:false })
     res.sendFile(path.join(__dirname+'/views/index.html'));
 })
 io.on('connection', function(socket) {

@@ -6,6 +6,9 @@ const fs = require('fs');
 const infoPlayer = require('./modules/infoplayers.js');
 const {rooms,Room} = require('./modules/Room.js');
 const juego = require('./modules/Gloop.js');
+var Cookies = require('cookies')
+const path = require('path');
+
 app.use(express.static('public'));
 app.set('port', (process.env.PORT || 80));
 /*************************************************/
@@ -21,12 +24,18 @@ var wait_list = [];
 var timers = 10;
 var info;
 var jugadores = 18;
+var keys = ['keyboard cat']
 /*************************************************/
+app.get('/',(req,res)=>{
+    var cookies = new Cookies(req, res, { keys: keys })
+    cookies.set('Pixeliio', new Date().toISOString(), { signed: true,sameSite:'none',secure:true })
+    res.sendFile(path.join(__dirname+'/views/index.html'));
+})
 io.on('connection', function(socket) {
     
     if (soc) {
 
-        socket.emit('recharge');
+        socket.emit('nrecharge');
         soc = false;
     }
     socket.on('login', function(data, fn) {

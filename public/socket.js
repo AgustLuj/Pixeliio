@@ -30,13 +30,15 @@ socket.on('join',function(data,data2,name) {
 			setId(socket.id,name);
 	    });
 });
-socket.on('info',function(data) {
-	if(data.type == 1){
-		info({'type':"wait",'users':data.length,'time':data.time});
-	}else if(data.type == 2){
+socket.on('info',function({type,length,time,players,win}) {
+	if(type == 1){
+		info({'type':"wait",'users':length,'time':time});
+	}else if(type == 2){
 		info({'type':"finish"});
-	}else if(data.type == 3){
-		info({'type':"finish_votes",'players':data.players,'winner':data.win})
+	}else if(type == 3){
+		console.log(win,players)
+		info({'type':"finish_votes",'images':players,'winner':win})
+		
 	}
 });
 socket.on('i',function() {

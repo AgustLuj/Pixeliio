@@ -1,7 +1,8 @@
 const rooms = [];
+const Robjet = require('./cRoom');
 var io;
 const Room = (numbRoom,words,size,wait_list,sock,fn) => {
-    io=sock;
+    /*io=sock;
     let name = 'room-' + numbRoom;// numbRoom es el numero inicial de las room
     let numbRoom2 = numbRoom;
     rooms.push({// incerto el nuevo romm en la variable general
@@ -42,10 +43,10 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
             }
         
             function dibujar() {
-                    /*for (var j = 0; j < rooms[numbRoom2].players.length; j++) {
+                    for (var j = 0; j < rooms[numbRoom2].players.length; j++) {
                         io.to(rooms[numbRoom2].players[j].id).emit('timer', timeMin,timeSec);
-                    */
-                    const {timeMin,timeSec,name} = rooms[numbRoom2];
+                    
+                   const {timeMin,timeSec,name} = rooms[numbRoom2];
                     io.sockets.in(name).emit('timer', timeMin,timeSec);
             }
             function loop() {
@@ -89,7 +90,7 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
                         })
                     rooms[Rid].finish= true;
                     fn(true,max)
-                /* for (var i = 0; i < words.length; i++) {
+                 for (var i = 0; i < words.length; i++) {
                         if(room[q].words == words[i].name){
                             for (var j = 0; j < rooms[q].players.length; j++) {
                                 if(rooms[q].players[j].votes > 0){
@@ -97,7 +98,7 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
                                 }
                             }
                         }
-                    }*/ 
+                    } 
                 }
             }else{
                 fn(false);
@@ -109,8 +110,9 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
             rooms[i].players[j].image[0].pixels[xy].b = b;
         }
     });
+    let idSocket;*/
     wait_list.forEach(({id,name}) => {
-        rooms[numbRoom2].players.push({
+        /*rooms[numbRoom2].players.push({
             'id': id,
             'name': name,
             'image': [{
@@ -120,23 +122,18 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
                 'name':name,
             }],
             'votes': 0
-        });
-        rooms[numbRoom2].players.forEach((player)=>{
+        });*/
+        Robjet.rooms[numbRoom2].createImg(size,id,name);
+        /*rooms[numbRoom2].players.forEach((player)=>{
             if (player.id == id) {
                 for (let j = 0; j < size * size; j++) {
                     player.image[0].pixels.push({ 'r': 255, 'g': 255, 'b': 255 });
                 }
             }
-        })
+        })*/
     });
-    rooms[numbRoom2].Gloop.iniciar();
+    Robjet.rooms[numbRoom2].iniciar();
     fn(name, rooms[numbRoom2].words, numbRoom2);
-}
-
-const Changergb = (i,j,xy,{r,g,b})=>{
-    rooms[i].players[j].image[0].pixels[xy].r = r;
-    rooms[i].players[j].image[0].pixels[xy].g = g;
-    rooms[i].players[j].image[0].pixels[xy].b = b;
 }
 module.exports = {
     rooms,

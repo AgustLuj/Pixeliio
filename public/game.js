@@ -812,7 +812,7 @@ function setScreen(S){
 
 		var t = "";
 
-		if(winner.id == ID){
+		if(winner.player.id == ID){
 			t = "¡¡GANASTE!!";
 			pr = new ParticleRain();
 		}else {
@@ -822,11 +822,11 @@ function setScreen(S){
 		var text = new Text(t,"CENTER",50,60);
 		text.add();
 
-		var text2 = new Text(winner.name,"CENTER",150,30);
+		var text2 = new Text(winner.player.name,"CENTER",150,30);
 		text2.text.tint = alizarin;
 		text2.add();
 
-		var img_winner = new Image(32,(WIDTH - 32 * 10) / 2,250,10,winner.image[0].pixels);
+		var img_winner = new Image(32,(WIDTH - 32 * 10) / 2,250,10,winner.pixels);
 
 		button_exit = new Button("CENTER",600,300,"Volver",22,turquoise);
 		buttons.push(button_exit);
@@ -873,18 +873,18 @@ function info(data){
 		if(SCREEN != 3){setScreen(3);}
 
 	}else if(data.type == "finish_votes"){
-
+		
 		var pvot = 0;
 
 		img.push(new Image(32,img.length * 166.666666 - (Math.trunc(img.length / 6) * WIDTH),160 + 166.666666 * (Math.trunc(img.length / 6)),5,image.pixels));
 		img[img.length - 1].id = ID;
 
 		for(var i = 0;i < img.length;i++){
-			for(var j = 0;j < data.players.length;j++){
+			for(var j = 0;j < data.images.length;j++){
 
-				if(img[i].id == data.players[j].id){
+				if(img[i].id == data.images[j].player.id){
 
-					var t = new Text(data.players[j].votes,0,0,40);
+					var t = new Text(data.images[j].votes,0,0,40);
 					t.add();
 
 					t.set(img[i].offx + ((img[i].size * img[i].scale) - t.text.width) / 2,img[i].offy + ((img[i].size * img[i].scale) - t.text.height) / 2);
@@ -1049,7 +1049,6 @@ function gameLoop(delta){
 }
 var count=0;
 function paintOnline(id,name,xy,r,g,b){ //paint another canvas
-
 	if(SCREEN == 1){
 
 		if(id != ID){
@@ -1066,13 +1065,13 @@ function paintOnline(id,name,xy,r,g,b){ //paint another canvas
 					break;
 				}
 			}
-
+			
 			if(!flag){
 
 				for(var i = 0;i < images.length;i++){
 
 					if(images[i].id == -9){
-
+						
 						images[i].id = id;
 						images[i].name = name;
 						images[i].paintXY(xy,r,g,b);

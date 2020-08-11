@@ -4,7 +4,8 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
 const infoPlayer = require('./modules/infoplayers.js');
-const {rooms,Room} = require('./modules/Room.js');
+const {Room} = require('./modules/Room.js');
+const {rooms,cRoom} = require('./modules/cRoom');
 const juego = require('./modules/Gloop.js');
 var Cookies = require('cookies')
 const path = require('path');
@@ -21,7 +22,7 @@ var words = [{'name':"rueda",'images':[]}];
 const size = 32
 var numbRoom = 0;
 var wait_list = [];
-var timers = 10;
+var timers =3;
 var info;
 var jugadores = 18;
 /*************************************************/
@@ -54,26 +55,34 @@ io.on('connection', function(socket) {
                 socket.i = i;
                 socket.j= j;
             })
+            console.log(socket.i,socket.j)
         }
         try{
-            rooms[socket.i].Changergb(socket.i,socket.j,xy,{r,g,b});
-            io.sockets.in(rooms[socket.i].name).emit('SPaint', id, rooms[socket.i].players[socket.j].name, xy, r, g, b);
-        }catch{}
+            rooms[socket.i].Changergb(socket.id,xy,{r,g,b});
+            io.sockets.in(rooms[socket.i].name).emit('SPaint', id, rooms[socket.i].images[socket.j].player.name, xy, r, g, b);
+        }catch(err){
+            console.log(err)
+        }
     });
     socket.on('vote', function(data) {
         try{
+            rooms[socket.i].Svote(socket.id,data);
+        }catch(err){
+            console.log(err);
+        }
+        /*try{
             rooms[socket.i].vote(data,(done,max={})=>{
                 if(done){
-                    io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].players,'win':max});
+                    io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].images,'win':max});
                 }else{
                     rooms[socket.i].vote(data,(done,max={})=>{
                         if(done){
-                            io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].players,'win':max});
+                            io.sockets.in(rooms[socket.i].name).emit('info',{'type':3,'players':rooms[socket.i].images,'win':max});
                         }
                     });
                 }
             })
-        }catch{} 
+        }catch{} */
     });
     socket.on('finishe',function() {
             try{
@@ -105,7 +114,8 @@ function info() {
         io.to(id).emit('info',{ 'type':1,'length':wait_list.length,'time':timers});
     })
     if (timers <= 0) {
-        if (wait_list.length > 1) {
+        if (wait_list.length > 0) {
+            cRoom(io,numbRoom);
             Room(numbRoom,words,size,wait_list,io,function(data, words, data2) {
                 numbRoom++;
                 /*for (var i = 0; i < wait_list.length; i++){

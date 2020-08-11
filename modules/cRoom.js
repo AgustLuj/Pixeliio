@@ -61,8 +61,8 @@ class Room{
         this.dibujar();
     }
     cVotes(){
-
         if (this.votes == this.images.length) {
+            this.dVote();
             var max;
                 this.images.forEach(imagen=>{
                     if(max == undefined || imagen.votes > max.votes){
@@ -70,27 +70,40 @@ class Room{
                     }
                 })
             this.finish= true;
-            this.tVote = null;
-            
+            console.log('a',this.tim,this.timer,this.tVote);
             if(this.a){
                 io.sockets.in(this.name).emit('info',{'type':3,'players':this.images,'win':max});
                 this.a = false;
             }
-            
-            
         }
     }
     Ivotes(){
-        this.tVote = setInterval(()=>{this.cVotes()},100);
- 
+        this.tVote = setInterval(()=>{this.cVotes()},500);
     }
     iniciar(){
         this.timer = setInterval(()=>{this.actualizar()},this.velocidad);
         this.tim = setInterval(()=>{this.dibujar()},100);
     }
     detener(){
-        this.timer = null;
-        this.tim= null;
+        if (this.timer._repeat)
+        {
+            clearInterval(this.timer);
+            
+        }
+        if (this.tim._repeat)
+        {
+            clearInterval(this.tim);
+            
+        }
+        
+    }
+    dVote(){
+        if (this.tVote._repeat)
+        {
+            clearInterval(this.tVote);
+            
+        }
+        
     }
 }
 class Vote{

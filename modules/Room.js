@@ -2,10 +2,10 @@ const rooms = [];
 const Robjet = require('./cRoom');
 var io;
 const Room = (numbRoom,words,size,wait_list,sock,fn) => {
-    /*io=sock;
+    io=sock;
     let name = 'room-' + numbRoom;// numbRoom es el numero inicial de las room
     let numbRoom2 = numbRoom;
-    rooms.push({// incerto el nuevo romm en la variable general
+    /*rooms.push({// incerto el nuevo romm en la variable general
         'name': name,
         'players': [],
         'timeMin': 1,
@@ -133,7 +133,7 @@ const Room = (numbRoom,words,size,wait_list,sock,fn) => {
         })*/
     });
     Robjet.rooms[numbRoom2].iniciar();
-    fn(name, rooms[numbRoom2].words, numbRoom2);
+    fn(name, words[0].name, numbRoom2);
 }
 module.exports = {
     rooms,

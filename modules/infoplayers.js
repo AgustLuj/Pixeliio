@@ -10,9 +10,19 @@ const {rooms} = require('./cRoom');
         }
     }
 }*/
-const info = ({id,data2},fn)=>{
+const infoPlayer = ({id,data2},fn)=>{
     let i = rooms.findIndex(({name})=>name === data2);
     let j = rooms[i].images.findIndex(({player})=>player.id === id);
-    fn(i,j);
+    let name = rooms[i].name;
+    fn(i,j,name);
 }
-module.exports = info;
+const Pjinfo = (id,fn)=>{
+    rooms.forEach(({images,name},i)=>{
+        let j = images.findIndex(({player})=>player.id === id);
+        return {i,j,name};
+    })
+}
+module.exports = {
+    infoPlayer,
+    Pjinfo
+};

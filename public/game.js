@@ -1,5 +1,6 @@
-var app = new PIXI.Application({width:1000,height:700});
-document.body.appendChild(app.view);
+const canvas = document.getElementById("canvas")
+var app = new PIXI.Application({width:1000,height:700,view: canvas,});
+//document.body.appendChild(app.view);
 document.body.addEventListener('keydown',e => onkeydown(e));
 
 app.ticker.add(delta => gameLoop(delta));
@@ -1429,4 +1430,11 @@ function getY(i,size){
 
 function getXY(x,y,size){
 	return size * y + x;
+}
+function fullscreen(){
+
+    canvas.webkitRequestFullscreen();
+
+    /*canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock ||canvas.webkitRequestPointerLock;
+    canvas.requestPointerLock();*/
 }

@@ -4,9 +4,9 @@ var io;
 class Room{
     constructor(name){
         this.name = name;
-        this.timeMin = 9;
-        this.timeSec= 59;
-        this.play = true;
+        this.timeMin = 0;
+        this.timeSec= 10;
+        this.play = false;
         this.votes = 0;
         this.mVote=false;
         this.images = [];
@@ -34,6 +34,7 @@ class Room{
         this.images[i].change(xy,r,g,b);
     }
     actualizar(){
+        //console.log(this.timeSec)
         if(this.play){
             if(this.images.length > 0){
                 if(this.timeMin > 0 || this.timeSec > 0){
@@ -70,7 +71,7 @@ class Room{
                     }
                 })
             this.finish= true;
-            console.log('a',this.tim,this.timer,this.tVote);
+            //console.log('a',this.tim,this.timer,this.tVote);
             if(this.a){
                 io.sockets.in(this.name).emit('info',{'type':3,'players':this.images,'win':max});
                 this.a = false;
@@ -148,11 +149,12 @@ class Image{
         }
     }
 }
-const cRoom = (socket,numbRoom,id)=>{
+const cRoom = (socket,numbRoom,fn)=>{
     let name = 'room-' + numbRoom;
     io = socket;
-    rooms.push(new Room(name,id))
-
+    rooms.push(new Room(name))
+    console.log(rooms[numbRoom]);
+    fn(numbRoom,name)
 }
 module.exports={
     cRoom,

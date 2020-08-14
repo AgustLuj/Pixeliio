@@ -3,8 +3,7 @@ const Robjet = require('./cRoom');
 var io;
 const Room = (numbRoom,words,size,wait_list,sock,fn) => {
     io=sock;
-    let name = 'room-' + numbRoom;// numbRoom es el numero inicial de las room
-    let numbRoom2 = numbRoom;
+    
     /*rooms.push({// incerto el nuevo romm en la variable general
         'name': name,
         'players': [],

@@ -700,6 +700,8 @@ var button_exit;
 var button_search;
 
 setScreen(0);
+document.oncontextmenu = function(){return false;}
+
 
 /*****************************************************************************************/
 
@@ -769,7 +771,7 @@ function setScreen(S){
 		buttons.push(btn_brush);
 		buttons.push(btn_fill);
 		buttons.push(btn_erase);
-
+		
 	}else if(S == 2){
 
 		wait = new Text("Buscando Partidas..","CENTER",200,50);

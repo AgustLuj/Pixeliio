@@ -4,7 +4,7 @@ var io;
 class Room{
     constructor(name){
         this.name = name;
-        this.timeMin = 1;
+        this.timeMin = 4;
         this.timeSec= 59;
         this.play = true;
         this.votes = 0;

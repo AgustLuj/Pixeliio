@@ -53,7 +53,7 @@ io.on('connection', function(socket) {
         if(socket.i == null || socket.j ==  null){
             infoPlayer({id,data2}, function(i, j) {
                 socket.i = i;
-                socket.j= j;
+                socket.j = j;
             })
             console.log(socket.i,socket.j)
         }

@@ -46,13 +46,13 @@ io.on('connection', function(socket) {
         fn();
     })
     socket.on('joinRoom', function(name, fn) {
-        wait_list.push({ 'id': socket.id, 'name': name });
+        wait_list.push({ 'id': socket.id, 'name': name ,'play':false});
         if(wait_list.length >= 2 && null !== timIniciar){
             clearTimeout(timeIniciar)
             timeIniciar = setTimeout(()=>{
                 timIniciar = true;
-                console.log('hola')
-            },10000);
+                //console.log('hola')
+            },100000);
         }
         if(!loop){
             whiteList.iniciar();
@@ -60,7 +60,7 @@ io.on('connection', function(socket) {
     });
     socket.on('paint', function(id, xy, r, g, b,data2) {
         if(socket.i == null || socket.j ==  null){
-            console.log(data2)
+            //console.log(data2)
             infoPlayer({id,data2}, function(i, j,name) {
                 socket.name = name
                 socket.i = i;
@@ -84,7 +84,7 @@ io.on('connection', function(socket) {
                 socket.name = name
                 socket.i = i;
                 socket.j = j;
-                console.log(socket.i,socket.j) 
+                //console.log(socket.i,socket.j) 
             })
             rooms[socket.i].Svote(socket.id,data);
         }
@@ -139,23 +139,38 @@ var whiteList = (function() {
     function actualizar() {
         if (timers <= 0 || timIniciar) {
             timIniciar=false;
-            if (wait_list.length > 1 ) {
+            if (wait_list.length > 1) {
                 if(a){
                     let a = false
                     detener();
                     cRoom(io,numbRoom,(idRoom,nameRoom)=>{
                         rooms[idRoom].play = true;
-                        wait_list.forEach(({id,name}) => {
-                            rooms[idRoom].createImg(size,id,name);
+                        wait_list.forEach(({id,name},i) => {
+                            if(i<17){
+                                rooms[idRoom].createImg(size,id,name);
+                                wait_list[i].play = true;
+                            }
                         });
                         rooms[idRoom].play = true;
                         rooms[idRoom].iniciar();          
-                        numbRoom++;
-                        wait_list.forEach(({id,name})=>{
-                            io.to(id).emit('join', nameRoom, 'rueda',name, wait_list.length - jugadores);
-                        })   
+                        numbRoom++; 
+                        wait_list.forEach(({id,name,play},i)=>{
+                            if(play){
+                                io.to(id).emit('join', nameRoom, 'rueda',name, wait_list.length - jugadores);
+                            }
+                            
+                        })
+                        
                     });
-                    wait_list = [];
+                    if(wait_list >17){
+                        wait_list.forEach(({play},i)=>{
+                            if(play){
+                                wait_list.splice(i,1);
+                            }
+                        })
+                    }else{
+                        wait_list = [];
+                    }
                     timers = 59
                     a = true;
                     loop = false;
